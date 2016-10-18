@@ -11,6 +11,7 @@ import String
 import Mouse
 import Math exposing (calculateDistance, calculateAngle, rotateAroundPoint)
 import Debug exposing (log)
+import Pythagoras exposing (buildTree)
 
 main =
   program { init = init, view = view, update = update, subscriptions = subscriptions }
@@ -66,14 +67,6 @@ drawRectangle : Color -> Int -> Int -> Form
 drawRectangle color width height =
   filled color (rect (toFloat (width)) (toFloat (height)))
 
-drawCircle : Color -> (Float, Float) -> Float -> Form
-drawCircle color (x, y) radius =
-  move (x, y) (filled color (circle radius))
-
-drawDot : Color -> (Float, Float) -> Form
-drawDot color coordinate =
-  drawCircle color coordinate 3
-
 drawBackground : Model -> Int -> Form
 drawBackground {width, height} padding =
   drawRectangle (rgb 200 200 200) (width-padding) (height-padding)
@@ -86,30 +79,6 @@ screenCoordsToCollage : Int -> Int -> Float
 screenCoordsToCollage screenCoord screenSize =
   (toFloat screenCoord) - ((toFloat screenSize) / 2)
 
-buildTree : Int -> Form -> Transform -> Transform -> List Form
-buildTree n form transformationMatrix previousMatrix =
-  let
-    newMatrix = Transform.multiply previousMatrix transformationMatrix
-    form' = groupTransform newMatrix [form]
-  in
-    if n > 1
-      then
-        [form'] ++ buildTree (n-1) form transformationMatrix newMatrix
-      else
-        [form']
-
-getTransformationMatrix : Model -> Transform
-getTransformationMatrix model =
-  let
-    m1 = Transform.translation -20 20
-    m2 = Transform.rotation (degrees -22)
-    m3 = Transform.scale 0.8
-    m4 = Transform.translation 20 -20
-    m5 = Transform.translation 0 40
-  in
-    List.foldl Transform.multiply Transform.identity [m1, m2, m3, m4, m5]
-
-
 view : Model -> Html Msg
 view model =
   let
@@ -117,13 +86,13 @@ view model =
     posX = screenCoordsToCollage mouseX width
     posY = screenCoordsToCollage mouseY height
 
-    form1 = drawBaseShape model
+    {points} = model
+    ptmodel = {points = points}
 
-    mx4 = getTransformationMatrix model
+    pt = buildTree 5 ptmodel
 
     forms =
       [drawBackground model 0]
-      ++ [form1]
-      ++ buildTree 5 form1 mx4 Transform.identity
+      ++ pt
   in
     collage width height forms |> toHtml

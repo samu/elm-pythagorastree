@@ -1,10 +1,28 @@
-module Pythagoras exposing (Model, buildTree)
+module Pythagoras exposing (Model, buildTree, init)
 import Transform exposing (Transform)
 import Collage exposing (Form, groupTransform, polygon, filled)
 import Color exposing (rgb)
 import Math exposing (Point)
 
-type alias Model = { points : List Point}
+type alias Model =
+  { points : List Point
+  , point : Point
+  , edges : List Int
+  }
+
+rectangle : Float -> List (Float, Float)
+rectangle factor =
+  [ (-1, 1), ( 1, 1) , ( 1,-1), (-1,-1) ]
+  |> List.map (\(x, y) -> (x * factor, y * factor))
+
+init : Model
+init =
+  let factor = 20
+  in
+    { points = rectangle factor
+    , point = (factor * -0.3, factor * 2)
+    , edges = [0,1,2,3]
+    }
 
 getTransformationMatrix : Model -> Transform
 getTransformationMatrix model =

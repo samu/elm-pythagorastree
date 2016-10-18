@@ -19,15 +19,8 @@ main =
 type alias Model =
   { width : Int, height : Int
   , mouseX : Int, mouseY : Int
-  , points : List (Float, Float)
-  , point : (Float, Float)
-  , edges : List Int
+  , ptree : Pythagoras.Model
   }
-
-rectangle : Float -> List (Float, Float)
-rectangle factor =
-  [ (-1, 1), ( 1, 1) , ( 1,-1), (-1,-1) ]
-  |> List.map (\(x, y) -> (x * factor, y * factor))
 
 init : (Model, Cmd Msg)
 init =
@@ -36,9 +29,7 @@ init =
     model =
     { width = 500, height = 500
     , mouseX = 0, mouseY = 0
-    , points = rectangle factor
-    , point = (factor * -0.3, factor * 2)
-    , edges = [0,1,2,3]
+    , ptree = Pythagoras.init
     }
   in (model, Cmd.none)
 
@@ -71,10 +62,6 @@ drawBackground : Model -> Int -> Form
 drawBackground {width, height} padding =
   drawRectangle (rgb 200 200 200) (width-padding) (height-padding)
 
-drawBaseShape : Model -> Form
-drawBaseShape {points} =
-  filled (rgb 255 0 0) (polygon points)
-
 screenCoordsToCollage : Int -> Int -> Float
 screenCoordsToCollage screenCoord screenSize =
   (toFloat screenCoord) - ((toFloat screenSize) / 2)
@@ -82,14 +69,11 @@ screenCoordsToCollage screenCoord screenSize =
 view : Model -> Html Msg
 view model =
   let
-    {width, height, mouseX, mouseY, point} = model
+    {width, height, mouseX, mouseY, ptree} = model
     posX = screenCoordsToCollage mouseX width
     posY = screenCoordsToCollage mouseY height
 
-    {points} = model
-    ptmodel = {points = points}
-
-    pt = buildTree 5 ptmodel
+    pt = buildTree 5 ptree
 
     forms =
       [drawBackground model 0]

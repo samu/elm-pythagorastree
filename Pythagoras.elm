@@ -38,10 +38,10 @@ getPoint points n =
 getTransformationMatrix : Model -> Transform
 getTransformationMatrix model =
   let
-    p0 = Debug.log "p0" (getPoint model.points 0)
+    p0 = getPoint model.points 0
     p1 = getPoint model.points 1
     p2 = getPoint model.points 2
-    p3 = Debug.log "p3" (getPoint model.points 3)
+    p3 = getPoint model.points 3
 
     (p1x, p1y) = p1
     (p2x, p2y) = p2

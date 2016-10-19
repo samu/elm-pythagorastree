@@ -73,7 +73,7 @@ view model =
     posX = screenCoordsToCollage mouseX width
     posY = screenCoordsToCollage mouseY height
 
-    pt = buildTree 5 ptree
+    pt = buildTree 7 ptree
 
     forms =
       [drawBackground model 0]

@@ -75,13 +75,6 @@ buildMatrices model =
     leftAngle = (calculateAngle model.point p0 p1) + topAngle + bottomAngle
     rightAngle = (-(calculateAngle model.point p1 p0)) + topAngle + bottomAngle
 
-  --   m1 = Transform.translation -p2x -p2y
-  --   m2 = Transform.rotation rightAngle
-  --   m3 = Transform.scale rightRatio
-  --   m4 = Transform.translation p2x p2y
-  --   m5 = Transform.translation (p1x-p2x) (p1y-p2y)
-  -- in
-  --   List.foldl Transform.multiply Transform.identity [m1, m2, m3, m4, m5]
     rightMatrix = buildMatrix p1 p2 rightAngle rightRatio
     leftMatrix = buildMatrix p0 p3 leftAngle leftRatio
   in
@@ -105,9 +98,5 @@ buildTree' n form transformationMatrices previousMatrix =
 
 buildTree : Int -> Model -> List Form
 buildTree n model =
-  let
-    matrices = buildMatrices model
-    {points} = model
-    form = filled (rgb 255 0 0) (polygon points)
-  in
-    [form] ++ buildTree' n form matrices Transform.identity
+  let form = filled (rgb 255 0 0) (polygon model.points)
+  in [form] ++ buildTree' n form (buildMatrices model) Transform.identity

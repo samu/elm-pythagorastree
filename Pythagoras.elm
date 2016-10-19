@@ -72,8 +72,8 @@ buildMatrices model =
     bottomAngle = r - calculateAngle p3 p2 p1
     topAngle = r - calculateAngle p2 p1 p0
 
-    leftAngle = (calculateAngle model.point p0 p1) + topAngle + bottomAngle
-    rightAngle = (-(calculateAngle model.point p1 p0)) + topAngle + bottomAngle
+    leftAngle = calculateAngle model.point p0 p1 + topAngle + bottomAngle
+    rightAngle = -(calculateAngle model.point p1 p0) + topAngle + bottomAngle
 
     rightMatrix = buildMatrix p1 p2 rightAngle rightRatio
     leftMatrix = buildMatrix p0 p3 leftAngle leftRatio

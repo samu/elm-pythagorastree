@@ -2,9 +2,8 @@ module Pythagoras exposing (Model, buildTree, init)
 import Transform exposing (Transform)
 import Collage exposing (Form, groupTransform, polygon, filled)
 import Color exposing (rgb)
-import Math exposing (Point)
+import Math exposing (Point, calculateAngle, calculateDistance)
 import Array exposing (Array, fromList, get)
--- import Maybe exposing (Maybe)
 
 type alias Model =
   { points : List Point
@@ -21,11 +20,11 @@ rectangle factor =
 init : Model
 init =
   let
-    factor = 20
+    factor = 30
     rect = rectangle factor
   in
     { points = rect
-    , point = (factor * -0.3, factor * 2)
+    , point = (factor * 0, factor * 2)
     , e0 = 0, e1 = 1
     , e3 = 3, e2 = 2
     }
@@ -39,11 +38,31 @@ getPoint points n =
 getTransformationMatrix : Model -> Transform
 getTransformationMatrix model =
   let
-    (p1x, p1y) = getPoint model.points 1
-    (p2x, p2y) = getPoint model.points 2
+    p0 = Debug.log "p0" (getPoint model.points 0)
+    p1 = getPoint model.points 1
+    p2 = getPoint model.points 2
+    p3 = Debug.log "p3" (getPoint model.points 3)
+
+    (p1x, p1y) = p1
+    (p2x, p2y) = p2
+
+    bottomLength = calculateDistance p2 p3
+    leftLength = calculateDistance p0 model.point
+    rightLength = calculateDistance p1 model.point
+
+    leftRatio = leftLength / bottomLength
+    rightRatio = rightLength / bottomLength
+
+    r = 90 * (pi / 180)
+    bottomAngle = r - calculateAngle p3 p2 p1
+    topAngle = r - calculateAngle p2 p1 p0
+
+    leftAngle = (calculateAngle model.point p0 p1) + topAngle + bottomAngle
+    rightAngle = (-(calculateAngle model.point p1 p0)) + topAngle + bottomAngle
+
     m1 = Transform.translation -p2x -p2y
-    m2 = Transform.rotation (degrees -22)
-    m3 = Transform.scale 0.8
+    m2 = Transform.rotation rightAngle
+    m3 = Transform.scale rightRatio
     m4 = Transform.translation p2x p2y
     m5 = Transform.translation (p1x-p2x) (p1y-p2y)
   in

@@ -9,27 +9,39 @@ import Element exposing (toHtml)
 import Window
 import String
 import Mouse
--- import Math exposing (calculateDistance, calculateAngle, rotateAroundPoint)
 import Debug exposing (log)
 import Pythagoras exposing (buildTree)
+import Math exposing (Point, calculateDistance)
 
 main =
   program { init = init, view = view, update = update, subscriptions = subscriptions }
+
+type Draggable = Anchor | Edge Int
 
 type alias Model =
   { width : Int, height : Int
   , mouseX : Int, mouseY : Int
   , ptree : Pythagoras.Model
+  , draggables : List (Point, Draggable)
+  , currentDraggable : Maybe Draggable
   }
+
+initDraggables : Pythagoras.Model -> List (Point, Draggable)
+initDraggables ptree =
+  [(ptree.point, Anchor)]
+  --++ List.map (\p -> (p, Edge 0)) ptree.points
 
 init : (Model, Cmd Msg)
 init =
   let
     factor = 20
+    ptree = Pythagoras.init
     model =
     { width = 500, height = 500
     , mouseX = 0, mouseY = 0
-    , ptree = Pythagoras.init
+    , ptree = ptree
+    , draggables = initDraggables ptree
+    , currentDraggable = Nothing
     }
   in (model, Cmd.none)
 
@@ -45,6 +57,22 @@ type Msg
   | Resize Int Int
   | MouseMove Int Int
 
+isClose : Point -> Point -> Bool
+isClose p1 p2 =
+  if calculateDistance p1 p2 < 10
+    then True
+    else False
+
+findHovered : Point -> List (Point, Draggable) -> Maybe Draggable
+findHovered mouse draggables =
+  case draggables of
+    [] ->
+      Nothing
+    (point, draggable) :: rest ->
+      if isClose mouse point
+        then Just draggable
+        else findHovered mouse rest
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
@@ -52,7 +80,12 @@ update msg model =
     Resize width height ->
       ({model | width = width, height = height}, Cmd.none)
     MouseMove x y ->
-      ({model | mouseX = x, mouseY = y}, Cmd.none)
+      let
+        x' = screenCoordsToCollage x model.width
+        y' = screenCoordsToCollage y model.height
+        draggable = Debug.log "draggable" (findHovered (x', -y') model.draggables)
+      in
+        ({model | mouseX = x, mouseY = y}, Cmd.none)
 
 drawRectangle : Color -> Int -> Int -> Form
 drawRectangle color width height =

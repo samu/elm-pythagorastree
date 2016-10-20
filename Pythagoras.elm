@@ -1,4 +1,4 @@
-module Pythagoras exposing (Model, buildTree, init)
+module Pythagoras exposing (Model, buildTree, init, updatePoint)
 import Transform exposing (Transform)
 import Collage exposing (Form, groupTransform, polygon, filled)
 import Color exposing (rgb)
@@ -28,6 +28,10 @@ init =
     , e0 = 0, e1 = 1
     , e3 = 3, e2 = 2
     }
+
+updatePoint : Point -> Model -> Model
+updatePoint point model =
+  {model | point = point}
 
 getPoint : List Point -> Int -> Point
 getPoint points n =

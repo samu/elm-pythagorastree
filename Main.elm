@@ -24,6 +24,7 @@ type alias Model =
   , ptree : Pythagoras.Model
   , draggables : List (Point, Draggable)
   , currentDraggable : Maybe Draggable
+  , isDragging : Bool
   }
 
 initDraggables : Pythagoras.Model -> List (Point, Draggable)
@@ -42,6 +43,7 @@ init =
     , ptree = ptree
     , draggables = initDraggables ptree
     , currentDraggable = Nothing
+    , isDragging = False
     }
   in (model, Cmd.none)
 
@@ -50,12 +52,16 @@ subscriptions model =
   Sub.batch
     [ Window.resizes (\{height, width} -> Resize width height)
     , Mouse.moves (\{x, y} -> MouseMove x y)
+    , Mouse.downs (\{x, y} -> MouseDown x y)
+    , Mouse.ups (\{x, y} -> MouseUp x y)
     ]
 
 type Msg
   = Update
   | Resize Int Int
   | MouseMove Int Int
+  | MouseDown Int Int
+  | MouseUp Int Int
 
 isClose : Point -> Point -> Bool
 isClose p1 p2 =
@@ -83,9 +89,26 @@ update msg model =
       let
         x' = screenCoordsToCollage x model.width
         y' = screenCoordsToCollage y model.height
-        draggable = Debug.log "draggable" (findHovered (x', -y') model.draggables)
+
+        draggable = case model.isDragging of
+          False -> findHovered (x', -y') model.draggables
+          True -> model.currentDraggable
+
+        model = if model.isDragging
+          then
+            case model.currentDraggable of
+              Nothing -> model
+              Just draggable -> case draggable of
+                Anchor -> {model | ptree = Pythagoras.updatePoint (x', 0) model.ptree}
+                Edge idx -> model
+          else
+            model
       in
-        ({model | mouseX = x, mouseY = y}, Cmd.none)
+        ({model | mouseX = x, mouseY = y, currentDraggable = draggable}, Cmd.none)
+    MouseDown x y ->
+      ({model | isDragging = True}, Cmd.none)
+    MouseUp x y ->
+      ({model | isDragging = False}, Cmd.none)
 
 drawRectangle : Color -> Int -> Int -> Form
 drawRectangle color width height =

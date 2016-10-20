@@ -90,21 +90,23 @@ update msg model =
         x' = screenCoordsToCollage x model.width
         y' = screenCoordsToCollage y model.height
 
+        p = (x', -y')
+
         draggable = case model.isDragging of
-          False -> findHovered (x', -y') model.draggables
+          False -> findHovered p model.draggables
           True -> model.currentDraggable
 
-        model = if model.isDragging
+        model' = if model.isDragging
           then
             case model.currentDraggable of
               Nothing -> model
               Just draggable -> case draggable of
-                Anchor -> {model | ptree = Pythagoras.updatePoint (x', 0) model.ptree}
+                Anchor -> {model | ptree = Pythagoras.updatePoint p model.ptree}
                 Edge idx -> model
           else
             model
       in
-        ({model | mouseX = x, mouseY = y, currentDraggable = draggable}, Cmd.none)
+        ({model' | mouseX = x, mouseY = y, currentDraggable = draggable}, Cmd.none)
     MouseDown x y ->
       ({model | isDragging = True}, Cmd.none)
     MouseUp x y ->
@@ -126,8 +128,6 @@ view : Model -> Html Msg
 view model =
   let
     {width, height, mouseX, mouseY, ptree} = model
-    posX = screenCoordsToCollage mouseX width
-    posY = screenCoordsToCollage mouseY height
 
     pt = buildTree 7 ptree
 

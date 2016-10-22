@@ -100,14 +100,14 @@ update msg model =
           then
             case model.currentDraggable of
               Nothing -> model
-              Just draggable -> case draggable of
-                Anchor ->
-                  let
-                    ptree = Pythagoras.updatePoint p model.ptree
-                    draggables = updateDraggables ptree
-                  in
-                    {model | draggables = draggables, ptree = ptree}
-                Edge idx -> model
+              Just draggable ->
+                let
+                  ptree = case draggable of
+                    Anchor -> Pythagoras.updatePoint p model.ptree
+                    Edge idx -> model.ptree
+                  draggables = updateDraggables ptree
+                in
+                  {model | draggables = draggables, ptree = ptree}
           else
             model
       in

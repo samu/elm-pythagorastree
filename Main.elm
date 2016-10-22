@@ -27,8 +27,8 @@ type alias Model =
   , isDragging : Bool
   }
 
-initDraggables : Pythagoras.Model -> List (Point, Draggable)
-initDraggables ptree =
+updateDraggables : Pythagoras.Model -> List (Point, Draggable)
+updateDraggables ptree =
   [(ptree.point, Anchor)]
   --++ List.map (\p -> (p, Edge 0)) ptree.points
 
@@ -41,7 +41,7 @@ init =
     { width = 500, height = 500
     , mouseX = 0, mouseY = 0
     , ptree = ptree
-    , draggables = initDraggables ptree
+    , draggables = updateDraggables ptree
     , currentDraggable = Nothing
     , isDragging = False
     }
@@ -101,7 +101,12 @@ update msg model =
             case model.currentDraggable of
               Nothing -> model
               Just draggable -> case draggable of
-                Anchor -> {model | ptree = Pythagoras.updatePoint p model.ptree}
+                Anchor ->
+                  let
+                    ptree = Pythagoras.updatePoint p model.ptree
+                    draggables = updateDraggables ptree
+                  in
+                    {model | draggables = draggables, ptree = ptree}
                 Edge idx -> model
           else
             model

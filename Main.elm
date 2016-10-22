@@ -30,7 +30,7 @@ type alias Model =
 updateDraggables : Pythagoras.Model -> List (Point, Draggable)
 updateDraggables ptree =
   [(ptree.point, Anchor)]
-  --++ List.map (\p -> (p, Edge 0)) ptree.points
+  ++ List.indexedMap (\n p -> (p, Edge n)) ptree.points
 
 init : (Model, Cmd Msg)
 init =
@@ -104,7 +104,7 @@ update msg model =
                 let
                   ptree = case draggable of
                     Anchor -> Pythagoras.updatePoint p model.ptree
-                    Edge idx -> model.ptree
+                    Edge n -> Pythagoras.updatePoints n p model.ptree
                   draggables = updateDraggables ptree
                 in
                   {model | draggables = draggables, ptree = ptree}

@@ -1,4 +1,4 @@
-module Pythagoras exposing (Model, buildTree, init, updatePoint)
+module Pythagoras exposing (Model, buildTree, init, updatePoint, updatePoints)
 import Transform exposing (Transform)
 import Collage exposing (Form, groupTransform, polygon, filled)
 import Color exposing (rgb)
@@ -32,6 +32,11 @@ init =
 updatePoint : Point -> Model -> Model
 updatePoint point model =
   {model | point = point}
+
+updatePoints : Int -> Point -> Model -> Model
+updatePoints n point model =
+  let f = \n' point' -> if n == n' then point else point'
+  in {model | points = List.indexedMap f model.points}
 
 getPoint : List Point -> Int -> Point
 getPoint points n =

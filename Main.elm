@@ -214,10 +214,10 @@ drawHint : Model -> List Form
 drawHint model =
   let
     form =
-      "Try this: move edges | add new edges | remove edges | click inside base shape | click outside base shape"
+      "Hint: you can change the base shape by moving and adding edges"
       |> fromString
       |> Text.color (rgba 255 255 255 0.5)
-      |> Text.height 8
+      |> Text.height 13
       |> Collage.text
       |> move (0, toFloat model.height / 2 - 15)
   in [form]

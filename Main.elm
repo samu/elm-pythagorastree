@@ -24,7 +24,6 @@ type alias Insertable = {point : Point, n : Int}
 
 type alias Model =
   { width : Int, height : Int
-  , mouseX : Int, mouseY : Int
   , mouseXF : Float, mouseYF : Float
   , ptree : Pythagoras.Model
   , draggables : List Draggable
@@ -49,7 +48,6 @@ init =
     a = Debug.log "ptree" ptree
     model =
     { width = 500, height = 500
-    , mouseX = 0, mouseY = 0
     , mouseXF = 0, mouseYF = 0
     , ptree = ptree
     , draggables = updateDraggables ptree
@@ -143,7 +141,7 @@ update msg model =
           else
             model
       in
-        ({model' | mouseX = x, mouseY = y, mouseXF = x', mouseYF = -y',
+        ({model' | mouseXF = x', mouseYF = -y',
           currentDraggable = draggable, insertable = insertable}, Cmd.none)
     MouseDown x y ->
       let
@@ -203,9 +201,7 @@ drawInsertable model =
 view : Model -> Html Msg
 view model =
   let
-    {width, height, mouseX, mouseY, ptree} = model
-
-    pt = buildTree 3 ptree
+    pt = buildTree 3 model.ptree
 
     forms =
       [drawBackground model 0]
@@ -213,4 +209,4 @@ view model =
       ++ drawDraggable model
       ++ drawInsertable model
   in
-    collage width height forms |> toHtml
+    collage model.width model.height forms |> toHtml

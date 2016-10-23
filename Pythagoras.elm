@@ -22,7 +22,7 @@ init : Model
 init =
   let
     factor = 30
-    translationY = -50
+    translationY = -100
     rect = rectangle factor
     |> List.map (\(x, y) -> (x, y + translationY))
   in

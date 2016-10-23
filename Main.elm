@@ -4,7 +4,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Collage exposing (Form, groupTransform, polygon, collage, filled, rect, circle, move, rotate)
 import Transform exposing (Transform)
-import Color exposing (Color, rgb)
+import Color exposing (Color, rgb, rgba)
 import Element exposing (toHtml)
 import Window
 import String
@@ -16,21 +16,23 @@ import Math exposing (Point, calculateDistance)
 main =
   program { init = init, view = view, update = update, subscriptions = subscriptions }
 
-type Draggable = Anchor | Edge Int
+type DraggableType = Anchor | Edge Int
+
+type alias Draggable = {point : Point, draggable : DraggableType}
 
 type alias Model =
   { width : Int, height : Int
   , mouseX : Int, mouseY : Int
   , ptree : Pythagoras.Model
-  , draggables : List (Point, Draggable)
+  , draggables : List Draggable
   , currentDraggable : Maybe Draggable
   , isDragging : Bool
   }
 
-updateDraggables : Pythagoras.Model -> List (Point, Draggable)
+updateDraggables : Pythagoras.Model -> List Draggable
 updateDraggables ptree =
-  [(ptree.point, Anchor)]
-  ++ List.indexedMap (\n p -> (p, Edge n)) ptree.points
+  [{point = ptree.point, draggable = Anchor}]
+  ++ List.indexedMap (\n p -> {point = p, draggable = Edge n}) ptree.points
 
 init : (Model, Cmd Msg)
 init =
@@ -66,13 +68,13 @@ type Msg
 isClose : Point -> Point -> Bool
 isClose p1 p2 = calculateDistance p1 p2 < 10
 
-findHovered : Point -> List (Point, Draggable) -> Maybe Draggable
+findHovered : Point -> List Draggable -> Maybe Draggable
 findHovered mouse draggables =
   case draggables of
     [] ->
       Nothing
-    (point, draggable) :: rest ->
-      if isClose mouse point
+    draggable :: rest ->
+      if isClose mouse draggable.point
         then Just draggable
         else findHovered mouse rest
 
@@ -97,7 +99,7 @@ update msg model =
           then
             case model.currentDraggable of
               Nothing -> model
-              Just draggable ->
+              Just {draggable} ->
                 let
                   ptree = case draggable of
                     Anchor -> Pythagoras.updatePoint p model.ptree
@@ -126,6 +128,16 @@ screenCoordsToCollage : Int -> Int -> Float
 screenCoordsToCollage screenCoord screenSize =
   (toFloat screenCoord) - ((toFloat screenSize) / 2)
 
+drawDraggable : Model -> List Form
+drawDraggable model =
+  if model.isDragging
+    then []
+    else
+      case model.currentDraggable of
+        Nothing -> []
+        Just {point, draggable} ->
+          [move point (filled (rgba 100 100 100 0.5) (circle 3))]
+
 view : Model -> Html Msg
 view model =
   let
@@ -136,5 +148,6 @@ view model =
     forms =
       [drawBackground model 0]
       ++ pt
+      ++ drawDraggable model
   in
     collage width height forms |> toHtml

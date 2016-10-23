@@ -64,10 +64,7 @@ type Msg
   | MouseUp Int Int
 
 isClose : Point -> Point -> Bool
-isClose p1 p2 =
-  if calculateDistance p1 p2 < 10
-    then True
-    else False
+isClose p1 p2 = calculateDistance p1 p2 < 10
 
 findHovered : Point -> List (Point, Draggable) -> Maybe Draggable
 findHovered mouse draggables =

@@ -14,6 +14,7 @@ import Mouse
 import Debug exposing (log)
 import Pythagoras exposing (buildTree)
 import Math exposing (Point, calculateDistance, calculateClosestPoint)
+import Task
 
 main =
   program { init = init, view = view, update = update, subscriptions = subscriptions }
@@ -56,7 +57,7 @@ init =
     , insertable = Nothing
     , isDragging = False
     }
-  in (model, Cmd.none)
+  in (model, initialSizeCmd)
 
 subscriptions: Model -> Sub Msg
 subscriptions model =
@@ -67,6 +68,13 @@ subscriptions model =
     , Mouse.ups (\{x, y} -> MouseUp x y)
     ]
 
+initialSizeCmd : Cmd Msg
+initialSizeCmd =
+  let
+    failure = \_ -> Resize 500 500
+    success = \size -> Resize size.width size.height
+  in Task.perform failure success Window.size
+
 type Msg
   = Update
   | Resize Int Int
@@ -74,8 +82,11 @@ type Msg
   | MouseDown Int Int
   | MouseUp Int Int
 
+maxDistance = 20
+dotSize = 6
+
 isClose : Point -> Point -> Bool
-isClose p1 p2 = calculateDistance p1 p2 < 10
+isClose p1 p2 = calculateDistance p1 p2 < maxDistance
 
 findHovered : Point -> List Draggable -> Maybe Draggable
 findHovered mouse draggables =
@@ -99,7 +110,7 @@ findInsertable model =
       in {point = closestPoint, distance = distance, n = 0}
     insertable = List.map2 (calculatePointAndDistance (model.mouseX, model.mouseY)) l1 l2
     |> List.indexedMap (\n item -> {item | n = n})
-    |> List.filter (\{distance} -> distance < 10)
+    |> List.filter (\{distance} -> distance < maxDistance)
     |> List.sortBy .distance
     |> List.head
   in
@@ -178,7 +189,7 @@ screenCoordsToCollage screenCoord screenSize =
 
 drawPoint : Color -> Point -> Form
 drawPoint color point =
-  move point (filled color (circle 3))
+  move point (filled color (circle dotSize))
 
 drawDraggable : Model -> List Form
 drawDraggable model =
@@ -205,7 +216,7 @@ drawHint model =
     form =
       "Try this: move edges | add new edges | remove edges | click inside base shape | click outside base shape"
       |> fromString
-      |> Text.color (rgb 255 255 255)
+      |> Text.color (rgba 255 255 255 0.5)
       |> Text.height 8
       |> Collage.text
       |> move (0, toFloat model.height / 2 - 15)
@@ -214,7 +225,7 @@ drawHint model =
 view : Model -> Html Msg
 view model =
   let
-    pt = buildTree 7 model.ptree model.startColor
+    pt = buildTree 9 model.ptree model.startColor
 
     forms =
       [drawBackground model 0]

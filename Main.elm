@@ -88,8 +88,8 @@ findHovered mouse draggables =
         then Just draggable
         else findHovered mouse rest
 
-calculateInsertable : Model -> Maybe Insertable
-calculateInsertable model =
+findInsertable : Model -> Maybe Insertable
+findInsertable model =
   let
     l1 = model.ptree.points
     l2 = (List.drop 1 model.ptree.points) ++ (List.take 1 model.ptree.points)
@@ -97,15 +97,16 @@ calculateInsertable model =
       let
         closestPoint = calculateClosestPoint (p1, p2) mouse
         distance = calculateDistance closestPoint mouse
-      in {point = closestPoint, distance = distance}
+      in {point = closestPoint, distance = distance, n = 0}
     insertable = List.map2 (calculatePointAndDistance (model.mouseXF, model.mouseYF)) l1 l2
+    |> List.indexedMap (\n item -> {item | n = n})
+    |> List.filter (\{distance} -> distance < 10)
     |> List.sortBy .distance
     |> List.head
-    blapp = Debug.log "candidates" insertable
   in
     case insertable of
       Nothing -> Nothing
-      Just {point} -> Just {point = point, n = 0}
+      Just {point, n} -> Just {point = point, n = n}
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -125,7 +126,7 @@ update msg model =
           False -> findHovered p model.draggables
           True -> model.currentDraggable
 
-        insertable = calculateInsertable model
+        insertable = findInsertable model
 
         model' = if model.isDragging
           then
@@ -145,9 +146,24 @@ update msg model =
         ({model' | mouseX = x, mouseY = y, mouseXF = x', mouseYF = -y',
           currentDraggable = draggable, insertable = insertable}, Cmd.none)
     MouseDown x y ->
-      ({model | isDragging = True}, Cmd.none)
+      let
+        model = case model.currentDraggable of
+          Nothing ->
+            let
+              ptree = case model.insertable of
+                Nothing -> model.ptree
+                Just {point, n} -> Pythagoras.insertPoint n point model.ptree
+              draggables = updateDraggables ptree
+              draggable = findHovered (model.mouseXF, model.mouseYF) draggables
+            in
+              {model | isDragging = True, ptree = ptree, draggables = draggables,
+                currentDraggable = draggable}
+          _ -> model
+      in ({model | isDragging = True}, Cmd.none)
     MouseUp x y ->
-      ({model | isDragging = False}, Cmd.none)
+      let draggables = updateDraggables model.ptree
+      in ({model | isDragging = False, draggables = draggables,
+        currentDraggable = Nothing}, Cmd.none)
 
 drawRectangle : Color -> Int -> Int -> Form
 drawRectangle color width height =
@@ -177,9 +193,12 @@ drawDraggable model =
 
 drawInsertable : Model -> List Form
 drawInsertable model =
-  case model.insertable of
-    Nothing -> []
-    Just {point, n} -> [drawPoint point]
+  case model.currentDraggable of
+    Nothing ->
+      case model.insertable of
+        Nothing -> []
+        Just {point, n} -> [drawPoint point]
+    _ -> []
 
 view : Model -> Html Msg
 view model =

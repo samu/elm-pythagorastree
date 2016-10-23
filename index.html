@@ -11951,11 +11951,11 @@ var _user$project$Main$drawHint = function (model) {
 		_evancz$elm_graphics$Collage$text(
 			A2(
 				_evancz$elm_graphics$Text$height,
-				8,
+				13,
 				A2(
 					_evancz$elm_graphics$Text$color,
 					A4(_elm_lang$core$Color$rgba, 255, 255, 255, 0.5),
-					_evancz$elm_graphics$Text$fromString('Try this: move edges | add new edges | remove edges | click inside base shape | click outside base shape')))));
+					_evancz$elm_graphics$Text$fromString('Hint: you can change the base shape by moving and adding edges')))));
 	return _elm_lang$core$Native_List.fromArray(
 		[form]);
 };
@@ -11973,15 +11973,14 @@ var _user$project$Main$drawRectangle = F3(
 				_elm_lang$core$Basics$toFloat(width),
 				_elm_lang$core$Basics$toFloat(height)));
 	});
-var _user$project$Main$drawBackground = F2(
-	function (_p0, padding) {
-		var _p1 = _p0;
-		return A3(
-			_user$project$Main$drawRectangle,
-			A3(_elm_lang$core$Color$rgb, 30, 30, 30),
-			_p1.width - padding,
-			_p1.height - padding);
-	});
+var _user$project$Main$drawBackground = function (_p0) {
+	var _p1 = _p0;
+	return A3(
+		_user$project$Main$drawRectangle,
+		A3(_elm_lang$core$Color$rgb, 30, 30, 30),
+		_p1.width,
+		_p1.height);
+};
 var _user$project$Main$dotSize = 6;
 var _user$project$Main$drawPoint = F2(
 	function (color, point) {
@@ -12035,25 +12034,27 @@ var _user$project$Main$drawInsertable = function (model) {
 	}
 };
 var _user$project$Main$view = function (model) {
-	var pt = A3(_user$project$Pythagoras$buildTree, 9, model.ptree, model.startColor);
-	var forms = A2(
-		_elm_lang$core$Basics_ops['++'],
-		_elm_lang$core$Native_List.fromArray(
-			[
-				A2(_user$project$Main$drawBackground, model, 0)
-			]),
-		A2(
-			_elm_lang$core$Basics_ops['++'],
-			pt,
+	return _evancz$elm_graphics$Element$toHtml(
+		A3(
+			_evancz$elm_graphics$Collage$collage,
+			model.width,
+			model.height,
 			A2(
 				_elm_lang$core$Basics_ops['++'],
-				_user$project$Main$drawDraggable(model),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_user$project$Main$drawBackground(model)
+					]),
 				A2(
 					_elm_lang$core$Basics_ops['++'],
-					_user$project$Main$drawInsertable(model),
-					_user$project$Main$drawHint(model)))));
-	return _evancz$elm_graphics$Element$toHtml(
-		A3(_evancz$elm_graphics$Collage$collage, model.width, model.height, forms));
+					A3(_user$project$Pythagoras$buildTree, 9, model.ptree, model.startColor),
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_user$project$Main$drawDraggable(model),
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_user$project$Main$drawInsertable(model),
+							_user$project$Main$drawHint(model)))))));
 };
 var _user$project$Main$maxDistance = 20;
 var _user$project$Main$isClose = F2(

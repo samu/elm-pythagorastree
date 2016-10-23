@@ -179,9 +179,9 @@ drawRectangle : Color -> Int -> Int -> Form
 drawRectangle color width height =
   filled color (rect (toFloat (width)) (toFloat (height)))
 
-drawBackground : Model -> Int -> Form
-drawBackground {width, height, backgroundColor} padding =
-  drawRectangle (rgb 30 30 30) (width-padding) (height-padding)
+drawBackground : Model -> Form
+drawBackground {width, height, backgroundColor} =
+  drawRectangle (rgb 30 30 30) (width) (height)
 
 screenCoordsToCollage : Int -> Int -> Float
 screenCoordsToCollage screenCoord screenSize =
@@ -214,24 +214,20 @@ drawHint : Model -> List Form
 drawHint model =
   let
     form =
-      "Try this: move edges | add new edges | remove edges | click inside base shape | click outside base shape"
+      "Hint: you can change the base shape by moving and adding edges"
       |> fromString
       |> Text.color (rgba 255 255 255 0.5)
-      |> Text.height 8
+      |> Text.height 13
       |> Collage.text
       |> move (0, toFloat model.height / 2 - 15)
   in [form]
 
 view : Model -> Html Msg
 view model =
-  let
-    pt = buildTree 9 model.ptree model.startColor
-
-    forms =
-      [drawBackground model 0]
-      ++ pt
-      ++ drawDraggable model
-      ++ drawInsertable model
-      ++ drawHint model
-  in
-    collage model.width model.height forms |> toHtml
+  [drawBackground model]
+  ++ buildTree 9 model.ptree model.startColor
+  ++ drawDraggable model
+  ++ drawInsertable model
+  ++ drawHint model
+  |> collage model.width model.height
+  |> toHtml

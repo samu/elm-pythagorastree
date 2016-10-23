@@ -179,9 +179,9 @@ drawRectangle : Color -> Int -> Int -> Form
 drawRectangle color width height =
   filled color (rect (toFloat (width)) (toFloat (height)))
 
-drawBackground : Model -> Int -> Form
-drawBackground {width, height, backgroundColor} padding =
-  drawRectangle (rgb 30 30 30) (width-padding) (height-padding)
+drawBackground : Model -> Form
+drawBackground {width, height, backgroundColor} =
+  drawRectangle (rgb 30 30 30) (width) (height)
 
 screenCoordsToCollage : Int -> Int -> Float
 screenCoordsToCollage screenCoord screenSize =
@@ -224,14 +224,10 @@ drawHint model =
 
 view : Model -> Html Msg
 view model =
-  let
-    pt = buildTree 9 model.ptree model.startColor
-
-    forms =
-      [drawBackground model 0]
-      ++ pt
-      ++ drawDraggable model
-      ++ drawInsertable model
-      ++ drawHint model
-  in
-    collage model.width model.height forms |> toHtml
+  [drawBackground model]
+  ++ buildTree 9 model.ptree model.startColor
+  ++ drawDraggable model
+  ++ drawInsertable model
+  ++ drawHint model
+  |> collage model.width model.height
+  |> toHtml

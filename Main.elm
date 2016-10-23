@@ -164,7 +164,7 @@ drawRectangle color width height =
 
 drawBackground : Model -> Int -> Form
 drawBackground {width, height} padding =
-  drawRectangle (rgb 200 200 200) (width-padding) (height-padding)
+  drawRectangle (rgb 10 10 10) (width-padding) (height-padding)
 
 screenCoordsToCollage : Int -> Int -> Float
 screenCoordsToCollage screenCoord screenSize =

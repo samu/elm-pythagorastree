@@ -1,9 +1,10 @@
 module Pythagoras exposing (Model, buildTree, init, updatePoint, updatePoints, insertPoint)
 import Transform exposing (Transform)
-import Collage exposing (Form, groupTransform, polygon, filled)
-import Color exposing (rgb)
+import Collage exposing (Form, Shape, polygon, groupTransform, filled)
+import Color exposing (Color, rgb)
 import Math exposing (Point, calculateAngle, calculateDistance)
 import Array exposing (Array, fromList, get)
+import Color.Mixing exposing (lighten, darken)
 
 type alias Model =
   { points : List Point
@@ -102,9 +103,19 @@ buildMatrices model =
   in
     (leftMatrix, rightMatrix)
 
-buildTree' : Int -> Form -> (Transform, Transform) -> Transform -> List Form
-buildTree' n form transformationMatrices previousMatrix =
+type alias Config =
+  { n : Int
+  , polygon : Shape
+  , color : Color
+  , transformationMatrices : (Transform, Transform)
+  , previousMatrix : Transform
+  }
+
+buildTree' : Config -> List Form
+buildTree' {n, polygon, color, transformationMatrices, previousMatrix} =
   let
+    newColor = lighten 0.05 color
+    form = filled newColor polygon
     (left, right) = transformationMatrices
     newMatrixLeft = Transform.multiply previousMatrix left
     newMatrixRight = Transform.multiply previousMatrix right
@@ -112,13 +123,27 @@ buildTree' n form transformationMatrices previousMatrix =
     formLeft = groupTransform newMatrixLeft [form]
   in
     if n > 1
-      then
-        [formRight] ++ buildTree' (n-1) form (left, right) newMatrixRight ++
-        [formLeft] ++ buildTree' (n-1) form (left, right) newMatrixLeft
+      then let
+        rightConfig =
+          { n = n-1, polygon = polygon, color = newColor
+          , transformationMatrices = (left, right)
+          , previousMatrix = newMatrixRight
+          }
+        leftConfig = { rightConfig | previousMatrix = newMatrixLeft }
+      in
+        [formRight] ++ buildTree' rightConfig
+        ++ [formLeft] ++ buildTree' leftConfig
       else
         [formLeft, formRight]
 
 buildTree : Int -> Model -> List Form
 buildTree n model =
-  let form = filled (rgb 255 0 0) (polygon model.points)
-  in [form] ++ buildTree' n form (buildMatrices model) Transform.identity
+  let
+    color = rgb 255 0 0
+    form = filled color (polygon model.points)
+    config =
+      { n = n, polygon = polygon model.points, color = color
+      , transformationMatrices = (buildMatrices model)
+      , previousMatrix = Transform.identity
+      }
+  in [form] ++ buildTree' config

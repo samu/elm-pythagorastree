@@ -24,7 +24,7 @@ type alias Insertable = {point : Point, n : Int}
 
 type alias Model =
   { width : Int, height : Int
-  , mouseXF : Float, mouseYF : Float
+  , mouseX : Float, mouseY : Float
   , ptree : Pythagoras.Model
   , draggables : List Draggable
   , currentDraggable : Maybe Draggable
@@ -48,7 +48,7 @@ init =
     a = Debug.log "ptree" ptree
     model =
     { width = 500, height = 500
-    , mouseXF = 0, mouseYF = 0
+    , mouseX = 0, mouseY = 0
     , ptree = ptree
     , draggables = updateDraggables ptree
     , currentDraggable = Nothing
@@ -96,7 +96,7 @@ findInsertable model =
         closestPoint = calculateClosestPoint (p1, p2) mouse
         distance = calculateDistance closestPoint mouse
       in {point = closestPoint, distance = distance, n = 0}
-    insertable = List.map2 (calculatePointAndDistance (model.mouseXF, model.mouseYF)) l1 l2
+    insertable = List.map2 (calculatePointAndDistance (model.mouseX, model.mouseY)) l1 l2
     |> List.indexedMap (\n item -> {item | n = n})
     |> List.filter (\{distance} -> distance < 10)
     |> List.sortBy .distance
@@ -141,7 +141,7 @@ update msg model =
           else
             model
       in
-        ({model' | mouseXF = x', mouseYF = -y',
+        ({model' | mouseX = x', mouseY = -y',
           currentDraggable = draggable, insertable = insertable}, Cmd.none)
     MouseDown x y ->
       let
@@ -152,7 +152,7 @@ update msg model =
                 Nothing -> model.ptree
                 Just {point, n} -> Pythagoras.insertPoint n point model.ptree
               draggables = updateDraggables ptree
-              draggable = findHovered (model.mouseXF, model.mouseYF) draggables
+              draggable = findHovered (model.mouseX, model.mouseY) draggables
             in
               {model | isDragging = True, ptree = ptree, draggables = draggables,
                 currentDraggable = draggable}

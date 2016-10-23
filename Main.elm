@@ -196,7 +196,7 @@ drawInsertable model =
 view : Model -> Html Msg
 view model =
   let
-    pt = buildTree 3 model.ptree
+    pt = buildTree 7 model.ptree
 
     forms =
       [drawBackground model 0]

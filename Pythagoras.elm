@@ -21,10 +21,12 @@ init : Model
 init =
   let
     factor = 30
+    translationY = -50
     rect = rectangle factor
+    |> List.map (\(x, y) -> (x, y + translationY))
   in
     { points = rect
-    , point = (factor * 0, factor * 1.9)
+    , point = (factor * 0, factor * 1.9 + translationY)
     , e0 = 0, e1 = 1
     , e3 = 3, e2 = 2
     }

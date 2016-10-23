@@ -136,13 +136,12 @@ buildTree' {n, polygon, color, transformationMatrices, previousMatrix} =
       else
         [formLeft, formRight]
 
-buildTree : Int -> Model -> List Form
-buildTree n model =
+buildTree : Int -> Model -> Color -> List Form
+buildTree n model startColor =
   let
-    color = rgb 255 0 0
-    form = filled color (polygon model.points)
+    form = filled startColor (polygon model.points)
     config =
-      { n = n, polygon = polygon model.points, color = color
+      { n = n, polygon = polygon model.points, color = startColor
       , transformationMatrices = (buildMatrices model)
       , previousMatrix = Transform.identity
       }

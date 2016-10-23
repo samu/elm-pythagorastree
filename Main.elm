@@ -25,6 +25,8 @@ type alias Insertable = {point : Point, n : Int}
 type alias Model =
   { width : Int, height : Int
   , mouseX : Float, mouseY : Float
+  , backgroundColor : Color
+  , startColor : Color
   , ptree : Pythagoras.Model
   , draggables : List Draggable
   , currentDraggable : Maybe Draggable
@@ -44,6 +46,8 @@ init =
     model =
     { width = 500, height = 500
     , mouseX = 0, mouseY = 0
+    , backgroundColor = rgb 30 30 30
+    , startColor = rgb 255 0 0
     , ptree = ptree
     , draggables = updateDraggables ptree
     , currentDraggable = Nothing
@@ -163,7 +167,7 @@ drawRectangle color width height =
   filled color (rect (toFloat (width)) (toFloat (height)))
 
 drawBackground : Model -> Int -> Form
-drawBackground {width, height} padding =
+drawBackground {width, height, backgroundColor} padding =
   drawRectangle (rgb 30 30 30) (width-padding) (height-padding)
 
 screenCoordsToCollage : Int -> Int -> Float
@@ -196,7 +200,7 @@ drawInsertable model =
 view : Model -> Html Msg
 view model =
   let
-    pt = buildTree 7 model.ptree
+    pt = buildTree 7 model.ptree model.startColor
 
     forms =
       [drawBackground model 0]

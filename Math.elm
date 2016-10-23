@@ -31,26 +31,3 @@ calculateClosestPoint ((x1, y1), (x2, y2)) (x3, y3) =
         then (x2, y2)
         else (x1 + u * xDelta, y1 + u * yDelta)
   in closestPoint
-
-
--- BasicMath.getClosestPoint = function(line, p3) {
---   var xDelta = line.p2.x - line.p1.x;
---   var yDelta = line.p2.y - line.p1.y;
---
---   if ((xDelta == 0) && (yDelta == 0)) {
---     throw new IllegalArgumentException("line.p1 and line.p2 cannot be the same point");
---   }
---
---   var u = ((p3.x - line.p1.x) * xDelta + (p3.y - line.p1.y) * yDelta) / (xDelta * xDelta + yDelta * yDelta);
---
---   var closestPoint;
---   if (u < 0) {
---     closestPoint = line.p1;
---   } else if (u > 1) {
---     closestPoint = line.p2;
---   } else {
---     closestPoint = new Point(line.p1.x + u * xDelta, line.p1.y + u * yDelta);
---   }
---
---   return closestPoint;
--- }

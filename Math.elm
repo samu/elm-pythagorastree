@@ -18,31 +18,39 @@ calculateAngle p1 p2 p3 =
   in
     acos ((a * a + b * b - c * c) / (2 * a * b))
 
-rotateAroundPoint : Float -> Point -> Form -> Form
-rotateAroundPoint angle (x, y) form =
+calculateClosestPoint : (Point, Point) -> Point -> Point
+calculateClosestPoint ((x1, y1), (x2, y2)) (x3, y3) =
   let
-    step1 = move (-x, -y) form
-    step2 = rotate angle (group [step1])
-    step3 = scale 0.71 step2
-    step4 = move (x, y) step3
+    xDelta = x2 - x1
+    yDelta = y2 - y1
+    u = ((x3 - x1) * xDelta + (y3 - y1) * yDelta) / (xDelta * xDelta + yDelta * yDelta)
 
-    t1 = Transform.translation -x -y
-    t2 = Transform.rotation angle
-    -- t2 = Transform.identity
-    t3 = Transform.translation x y
-    -- t3 = Transform.identity
+    closestPoint = if u < 0
+      then (x1, y1)
+      else if u > 1
+        then (x2, y2)
+        else (x1 + u * xDelta, y1 + u * yDelta)
+  in closestPoint
 
-    r1 = Transform.multiply t1 t2
-    r2 = Transform.multiply r1 t3
 
-    f1 = groupTransform t1 [form]
-    f2 = groupTransform t2 [f1]
-    f3 = groupTransform t3 [f2]
-
-    bla = groupTransform r2 [form]
-  in
-    -- f3
-    bla
-    -- step4
-    -- step2
-    -- groupTransform r2 [form]
+-- BasicMath.getClosestPoint = function(line, p3) {
+--   var xDelta = line.p2.x - line.p1.x;
+--   var yDelta = line.p2.y - line.p1.y;
+--
+--   if ((xDelta == 0) && (yDelta == 0)) {
+--     throw new IllegalArgumentException("line.p1 and line.p2 cannot be the same point");
+--   }
+--
+--   var u = ((p3.x - line.p1.x) * xDelta + (p3.y - line.p1.y) * yDelta) / (xDelta * xDelta + yDelta * yDelta);
+--
+--   var closestPoint;
+--   if (u < 0) {
+--     closestPoint = line.p1;
+--   } else if (u > 1) {
+--     closestPoint = line.p2;
+--   } else {
+--     closestPoint = new Point(line.p1.x + u * xDelta, line.p1.y + u * yDelta);
+--   }
+--
+--   return closestPoint;
+-- }

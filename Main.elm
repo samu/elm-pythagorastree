@@ -11,7 +11,7 @@ import String
 import Mouse
 import Debug exposing (log)
 import Pythagoras exposing (buildTree)
-import Math exposing (Point, calculateDistance)
+import Math exposing (Point, calculateDistance, calculateClosestPoint)
 
 main =
   program { init = init, view = view, update = update, subscriptions = subscriptions }
@@ -20,12 +20,16 @@ type DraggableType = Anchor | Edge Int
 
 type alias Draggable = {point : Point, draggable : DraggableType}
 
+type alias Insertable = {point : Point, n : Int}
+
 type alias Model =
   { width : Int, height : Int
   , mouseX : Int, mouseY : Int
+  , mouseXF : Float, mouseYF : Float
   , ptree : Pythagoras.Model
   , draggables : List Draggable
   , currentDraggable : Maybe Draggable
+  , insertable : Maybe Insertable
   , isDragging : Bool
   }
 
@@ -46,9 +50,11 @@ init =
     model =
     { width = 500, height = 500
     , mouseX = 0, mouseY = 0
+    , mouseXF = 0, mouseYF = 0
     , ptree = ptree
     , draggables = updateDraggables ptree
     , currentDraggable = Nothing
+    , insertable = Nothing
     , isDragging = False
     }
   in (model, Cmd.none)
@@ -82,6 +88,26 @@ findHovered mouse draggables =
         then Just draggable
         else findHovered mouse rest
 
+calculateInsertable : Model -> Maybe Insertable
+calculateInsertable model =
+  let
+    l1 = model.ptree.points
+    l2 = (List.drop 1 model.ptree.points) ++ (List.take 1 model.ptree.points)
+    calculatePointAndDistance mouse p1 p2 =
+      let
+        closestPoint = calculateClosestPoint (p1, p2) mouse
+        distance = calculateDistance closestPoint mouse
+      in {point = closestPoint, distance = distance}
+    insertable = List.map2 (calculatePointAndDistance (model.mouseXF, model.mouseYF)) l1 l2
+    |> List.sortBy .distance
+    |> List.head
+    blapp = Debug.log "candidates" insertable
+  in
+    case insertable of
+      Nothing -> Nothing
+      Just {point} -> Just {point = point, n = 0}
+
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
@@ -99,6 +125,8 @@ update msg model =
           False -> findHovered p model.draggables
           True -> model.currentDraggable
 
+        insertable = calculateInsertable model
+
         model' = if model.isDragging
           then
             case model.currentDraggable of
@@ -114,7 +142,8 @@ update msg model =
           else
             model
       in
-        ({model' | mouseX = x, mouseY = y, currentDraggable = draggable}, Cmd.none)
+        ({model' | mouseX = x, mouseY = y, mouseXF = x', mouseYF = -y',
+          currentDraggable = draggable, insertable = insertable}, Cmd.none)
     MouseDown x y ->
       ({model | isDragging = True}, Cmd.none)
     MouseUp x y ->
@@ -132,6 +161,10 @@ screenCoordsToCollage : Int -> Int -> Float
 screenCoordsToCollage screenCoord screenSize =
   (toFloat screenCoord) - ((toFloat screenSize) / 2)
 
+drawPoint : Point -> Form
+drawPoint point =
+  move point (filled (rgba 100 100 100 0.5) (circle 3))
+
 drawDraggable : Model -> List Form
 drawDraggable model =
   if model.isDragging
@@ -140,7 +173,13 @@ drawDraggable model =
       case model.currentDraggable of
         Nothing -> []
         Just {point, draggable} ->
-          [move point (filled (rgba 100 100 100 0.5) (circle 3))]
+          [drawPoint point]
+
+drawInsertable : Model -> List Form
+drawInsertable model =
+  case model.insertable of
+    Nothing -> []
+    Just {point, n} -> [drawPoint point]
 
 view : Model -> Html Msg
 view model =
@@ -153,5 +192,6 @@ view model =
       [drawBackground model 0]
       ++ pt
       ++ drawDraggable model
+      ++ drawInsertable model
   in
     collage width height forms |> toHtml

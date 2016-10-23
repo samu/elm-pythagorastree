@@ -1,4 +1,4 @@
-module Pythagoras exposing (Model, buildTree, init, updatePoint, updatePoints)
+module Pythagoras exposing (Model, buildTree, init, updatePoint, updatePoints, insertPoint)
 import Transform exposing (Transform)
 import Collage exposing (Form, groupTransform, polygon, filled)
 import Color exposing (rgb)
@@ -38,6 +38,17 @@ updatePoints n point model =
   let f = \n' point' -> if n == n' then point else point'
   in {model | points = List.indexedMap f model.points}
 
+insertPoint : Int -> Point -> Model -> Model
+insertPoint n point model =
+  let
+    n = n + 1
+    points = List.take n model.points ++ [point] ++ List.drop n model.points
+    bump index n' = if index >= n' then 1 else 0
+    e1 = model.e1 + bump model.e1 n
+    e2 = model.e2 + bump model.e2 n
+    e3 = model.e3 + bump model.e3 n
+  in {model | points = points, e1 = e1, e2 = e2, e3 = e3}
+
 getPoint : List Point -> Int -> Point
 getPoint points n =
   case fromList points |> get n of
@@ -61,10 +72,10 @@ buildMatrix p1 p2 angle ratio =
 buildMatrices : Model -> (Transform, Transform)
 buildMatrices model =
   let
-    p0 = getPoint model.points 0
-    p1 = getPoint model.points 1
-    p2 = getPoint model.points 2
-    p3 = getPoint model.points 3
+    p0 = getPoint model.points model.e0
+    p1 = getPoint model.points model.e1
+    p2 = getPoint model.points model.e2
+    p3 = getPoint model.points model.e3
 
     (p1x, p1y) = p1
     (p2x, p2y) = p2

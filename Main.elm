@@ -39,6 +39,10 @@ init =
   let
     factor = 20
     ptree = Pythagoras.init
+    |> Pythagoras.insertPoint 1 (2*factor, 0)
+    |> Pythagoras.insertPoint 3 (0, 0.2*factor)
+    |> Pythagoras.insertPoint 5 (-0.9*factor, 0)
+    a = Debug.log "ptree" ptree
     model =
     { width = 500, height = 500
     , mouseX = 0, mouseY = 0
@@ -143,7 +147,7 @@ view model =
   let
     {width, height, mouseX, mouseY, ptree} = model
 
-    pt = buildTree 7 ptree
+    pt = buildTree 3 ptree
 
     forms =
       [drawBackground model 0]

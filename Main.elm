@@ -6,7 +6,7 @@ import Collage exposing (Form, groupTransform, polygon, collage, filled, rect,
   circle, move, rotate)
 import Text exposing (fromString)
 import Transform exposing (Transform)
-import Color exposing (Color, rgb, rgba)
+import Color exposing (Color, rgb, rgba, complement)
 import Element exposing (toHtml)
 import Window
 import String
@@ -176,9 +176,9 @@ screenCoordsToCollage : Int -> Int -> Float
 screenCoordsToCollage screenCoord screenSize =
   (toFloat screenCoord) - ((toFloat screenSize) / 2)
 
-drawPoint : Point -> Form
-drawPoint point =
-  move point (filled (rgba 100 100 100 0.5) (circle 3))
+drawPoint : Color -> Point -> Form
+drawPoint color point =
+  move point (filled color (circle 3))
 
 drawDraggable : Model -> List Form
 drawDraggable model =
@@ -188,7 +188,7 @@ drawDraggable model =
       case model.currentDraggable of
         Nothing -> []
         Just {point, draggable} ->
-          [drawPoint point]
+          [drawPoint (rgba 255 255 255 0.6) point]
 
 drawInsertable : Model -> List Form
 drawInsertable model =
@@ -196,7 +196,7 @@ drawInsertable model =
     Nothing ->
       case model.insertable of
         Nothing -> []
-        Just {point, n} -> [drawPoint point]
+        Just {point, n} -> [drawPoint (rgba 255 255 255 0.6) point]
     _ -> []
 
 drawHint : Model -> List Form

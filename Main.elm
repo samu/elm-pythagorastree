@@ -206,9 +206,9 @@ drawHint model =
       "Try this: move edges | add new edges | remove edges | click inside base shape | click outside base shape"
       |> fromString
       |> Text.color (rgb 255 255 255)
-      |> Text.height 7
+      |> Text.height 8
       |> Collage.text
-      |> move (0, toFloat model.height / 2 - 10)
+      |> move (0, toFloat model.height / 2 - 15)
   in [form]
 
 view : Model -> Html Msg

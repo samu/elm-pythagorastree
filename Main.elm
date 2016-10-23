@@ -2,7 +2,9 @@ import Html exposing (Html, Attribute, text, div, input)
 import Html.App exposing (program)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
-import Collage exposing (Form, groupTransform, polygon, collage, filled, rect, circle, move, rotate)
+import Collage exposing (Form, groupTransform, polygon, collage, filled, rect,
+  circle, move, rotate)
+import Text exposing (fromString)
 import Transform exposing (Transform)
 import Color exposing (Color, rgb, rgba)
 import Element exposing (toHtml)
@@ -197,6 +199,18 @@ drawInsertable model =
         Just {point, n} -> [drawPoint point]
     _ -> []
 
+drawHint : Model -> List Form
+drawHint model =
+  let
+    form =
+      "Try this: move edges | add new edges | remove edges | click inside base shape | click outside base shape"
+      |> fromString
+      |> Text.color (rgb 255 255 255)
+      |> Text.height 7
+      |> Collage.text
+      |> move (0, toFloat model.height / 2 - 10)
+  in [form]
+
 view : Model -> Html Msg
 view model =
   let
@@ -207,5 +221,6 @@ view model =
       ++ pt
       ++ drawDraggable model
       ++ drawInsertable model
+      ++ drawHint model
   in
     collage model.width model.height forms |> toHtml

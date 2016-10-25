@@ -34,7 +34,8 @@ type alias Model =
   , draggables : List Draggable
   , currentDraggable : Maybe Draggable
   , insertable : Maybe Insertable
-  , isDragging : Bool
+  , mouseIsDown : Bool
+  , hasDragged : Bool
   }
 
 updateDraggables : Pythagoras.Model -> List Draggable
@@ -55,7 +56,8 @@ init =
     , draggables = updateDraggables ptree
     , currentDraggable = Nothing
     , insertable = Nothing
-    , isDragging = False
+    , mouseIsDown = False
+    , hasDragged = False
     }
   in (model, initialSizeCmd)
 
@@ -127,18 +129,18 @@ update msg model =
       ({model | width = width, height = height}, Cmd.none)
     MouseMove x y ->
       let
-        x' = screenCoordsToCollage x model.width
-        y' = screenCoordsToCollage y model.height
+        p = screenPointToCollage (x, y) (model.width, model.height)
+        (mouseX, mouseY) = p
 
-        p = (x', -y')
-
-        draggable = case model.isDragging of
+        draggable = case model.mouseIsDown of
           False -> findHovered p model.draggables
           True -> model.currentDraggable
 
         insertable = findInsertable model
 
-        model' = if model.isDragging
+        hasDragged = model.mouseIsDown
+
+        model' = if model.mouseIsDown
           then
             case model.currentDraggable of
               Nothing -> model
@@ -153,7 +155,7 @@ update msg model =
           else
             model
       in
-        ({model' | mouseX = x', mouseY = -y',
+        ({model' | mouseX = mouseX, mouseY = mouseY, hasDragged = hasDragged,
           currentDraggable = draggable, insertable = insertable}, Cmd.none)
     MouseDown x y ->
       let
@@ -166,14 +168,21 @@ update msg model =
               draggables = updateDraggables ptree
               draggable = findHovered (model.mouseX, model.mouseY) draggables
             in
-              {model | isDragging = True, ptree = ptree, draggables = draggables,
+              {model | mouseIsDown = True, ptree = ptree, draggables = draggables,
                 currentDraggable = draggable}
           _ -> model
-      in ({model | isDragging = True}, Cmd.none)
+      in
+        ({model | mouseIsDown = True}, Cmd.none)
     MouseUp x y ->
-      let draggables = updateDraggables model.ptree
-      in ({model | isDragging = False, draggables = draggables,
-        currentDraggable = Nothing}, Cmd.none)
+      let
+        draggables = updateDraggables model.ptree
+
+        p = screenPointToCollage (x, y) (model.width, model.height)
+
+        draggable = findHovered p draggables
+      in
+        ({model | mouseIsDown = False, draggables = draggables,
+          currentDraggable = draggable}, Cmd.none)
 
 drawRectangle : Color -> Int -> Int -> Form
 drawRectangle color width height =
@@ -182,6 +191,10 @@ drawRectangle color width height =
 drawBackground : Model -> Form
 drawBackground {width, height, backgroundColor} =
   drawRectangle (rgb 30 30 30) (width) (height)
+
+screenPointToCollage : (Int, Int) -> (Int, Int) -> Point
+screenPointToCollage (mouseX, mouseY) (width, height) =
+  (screenCoordsToCollage mouseX width, -(screenCoordsToCollage mouseY height))
 
 screenCoordsToCollage : Int -> Int -> Float
 screenCoordsToCollage screenCoord screenSize =
@@ -193,7 +206,7 @@ drawPoint color point =
 
 drawDraggable : Model -> List Form
 drawDraggable model =
-  if model.isDragging
+  if model.mouseIsDown
     then []
     else
       case model.currentDraggable of

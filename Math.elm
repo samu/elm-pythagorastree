@@ -31,3 +31,16 @@ calculateClosestPoint ((x1, y1), (x2, y2)) (x3, y3) =
         then (x2, y2)
         else (x1 + u * xDelta, y1 + u * yDelta)
   in closestPoint
+
+calculateCrossProduct : Point -> Point -> Point -> Float
+calculateCrossProduct (x0, y0) (x1, y1) (x2, y2) =
+  (x1 - x0) * (y2 - y1) - (y1 - y0) * (x2 - x1)
+
+liesInPolygon : Point -> List Point -> Bool
+liesInPolygon point polygon =
+  let
+    l1 = polygon
+    l2 = (List.drop 1 polygon) ++ (List.take 1 polygon)
+  in
+    List.map2 (,) l1 l2
+    |> List.all (\(p1, p2) -> (calculateCrossProduct p1 p2 point) < 0)

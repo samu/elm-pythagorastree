@@ -1,5 +1,5 @@
 module Pythagoras exposing (Model, buildTree, init, updatePoint, updatePoints,
-  insertPoint, removePoint)
+  insertPoint, removePoint, getOnlyEdgePoints)
 import Transform exposing (Transform)
 import Collage exposing (Form, Shape, polygon, groupTransform, filled)
 import Color exposing (Color, rgb)
@@ -74,6 +74,16 @@ getPoint points n =
   case fromList points |> get n of
     Just a -> a
     Nothing -> (0,0)
+
+getOnlyEdgePoints : Model -> List Point
+getOnlyEdgePoints model =
+  let
+    p0 = getPoint model.points model.e0
+    p1 = getPoint model.points model.e1
+    p2 = getPoint model.points model.e2
+    p3 = getPoint model.points model.e3
+  in
+    [p0, p1, p2, p3]
 
 buildMatrix : Point -> Point -> Float -> Float -> Transform
 buildMatrix p1 p2 angle ratio =

@@ -17,6 +17,7 @@ import Math exposing (Point, calculateDistance, calculateClosestPoint)
 import Task
 import Random
 import Array
+import Helpers exposing (screenPointToCollage, drawPoint, colorFromList)
 
 main =
   program { init = init, view = view, update = update, subscriptions = subscriptions }
@@ -86,12 +87,10 @@ type Msg
   | MouseDown Int Int
   | MouseUp Int Int
   | RandomizeBackgroundColor (List Int)
+  | RandomizeStartColor (List Int)
 
 maxDistance = 20
 dotSize = 6
-
-isClose : Point -> Point -> Bool
-isClose p1 p2 = calculateDistance p1 p2 < maxDistance
 
 findHovered : Point -> List Draggable -> Maybe Draggable
 findHovered mouse draggables =
@@ -99,7 +98,7 @@ findHovered mouse draggables =
     [] ->
       Nothing
     draggable :: rest ->
-      if isClose mouse draggable.point
+      if calculateDistance mouse draggable.point < maxDistance
         then Just draggable
         else findHovered mouse rest
 
@@ -112,12 +111,13 @@ findInsertable model =
       let
         closestPoint = calculateClosestPoint (p1, p2) mouse
         distance = calculateDistance closestPoint mouse
-      in {point = closestPoint, distance = distance, n = 0}
+      in
+        {point = closestPoint, distance = distance, n = 0}
     insertable = List.map2 (calculatePointAndDistance (model.mouseX, model.mouseY)) l1 l2
-    |> List.indexedMap (\n item -> {item | n = n})
-    |> List.filter (\{distance} -> distance < maxDistance)
-    |> List.sortBy .distance
-    |> List.head
+      |> List.indexedMap (\n item -> {item | n = n})
+      |> List.filter (\{distance} -> distance < maxDistance)
+      |> List.sortBy .distance
+      |> List.head
   in
     case insertable of
       Nothing -> Nothing
@@ -178,10 +178,10 @@ update msg model =
         ({model | mouseIsDown = True}, Cmd.none)
     MouseUp x y ->
       let
-        ptree = case model.hasDragged of
-          True ->
+        ptree = if model.hasDragged
+          then
             model.ptree
-          False ->
+          else
             case model.currentDraggable of
               Nothing -> model.ptree
               Just {draggable} -> case draggable of
@@ -192,53 +192,35 @@ update msg model =
           True ->
             Cmd.none
           False ->
-            Random.generate RandomizeBackgroundColor (Random.list 3 (Random.int 0 255))
-
-        draggables = updateDraggables ptree
+            case model.currentDraggable of
+              Nothing ->
+                let
+                  random = Random.list 3 (Random.int 0 255)
+                  liesInPolygon = Pythagoras.getOnlyEdgePoints model.ptree
+                    |> Math.liesInPolygon p
+                in
+                  case liesInPolygon of
+                    True ->
+                      Random.generate RandomizeStartColor random
+                    False ->
+                      Random.generate RandomizeBackgroundColor random
+              _ ->
+                Cmd.none
 
         p = screenPointToCollage (x, y) (model.width, model.height)
-
+        draggables = updateDraggables ptree
         draggable = findHovered p draggables
       in
         ({model | mouseIsDown = False, draggables = draggables,
           currentDraggable = draggable, ptree = ptree}, cmd)
     RandomizeBackgroundColor list ->
-      Debug.log "blapp" ({model | backgroundColor = colorFromList list}, Cmd.none)
-
-colorFromList : List Int -> Color
-colorFromList integers =
-  let
-    getValueWithDefault i array =
-      case Array.get i array of
-        Nothing -> 0
-        Just n -> n
-
-    integerArray = Array.fromList integers
-    r = getValueWithDefault 0 integerArray
-    g = getValueWithDefault 1 integerArray
-    b = getValueWithDefault 2 integerArray
-  in
-    rgb r g b
-
-drawRectangle : Color -> Int -> Int -> Form
-drawRectangle color width height =
-  filled color (rect (toFloat (width)) (toFloat (height)))
+      ({model | backgroundColor = colorFromList list}, Cmd.none)
+    RandomizeStartColor list ->
+      ({model | startColor = colorFromList list}, Cmd.none)
 
 drawBackground : Model -> Form
 drawBackground {width, height, backgroundColor} =
-  drawRectangle backgroundColor (width) (height)
-
-screenPointToCollage : (Int, Int) -> (Int, Int) -> Point
-screenPointToCollage (mouseX, mouseY) (width, height) =
-  (screenCoordsToCollage mouseX width, -(screenCoordsToCollage mouseY height))
-
-screenCoordsToCollage : Int -> Int -> Float
-screenCoordsToCollage screenCoord screenSize =
-  (toFloat screenCoord) - ((toFloat screenSize) / 2)
-
-drawPoint : Color -> Point -> Form
-drawPoint color point =
-  move point (filled color (circle dotSize))
+  filled backgroundColor (rect (toFloat (width)) (toFloat (height)))
 
 drawDraggable : Model -> List Form
 drawDraggable model =
@@ -248,7 +230,7 @@ drawDraggable model =
       case model.currentDraggable of
         Nothing -> []
         Just {point, draggable} ->
-          [drawPoint (rgba 255 255 255 0.6) point]
+          [drawPoint (rgba 255 255 255 0.6) dotSize point]
 
 drawInsertable : Model -> List Form
 drawInsertable model =
@@ -256,7 +238,7 @@ drawInsertable model =
     Nothing ->
       case model.insertable of
         Nothing -> []
-        Just {point, n} -> [drawPoint (rgba 255 255 255 0.6) point]
+        Just {point, n} -> [drawPoint (rgba 255 255 255 0.6) dotSize point]
     _ -> []
 
 drawHint : Model -> List Form
@@ -274,9 +256,9 @@ drawHint model =
 view : Model -> Html Msg
 view model =
   [drawBackground model]
-  ++ buildTree 9 model.ptree model.startColor
-  ++ drawDraggable model
-  ++ drawInsertable model
-  ++ drawHint model
-  |> collage model.width model.height
-  |> toHtml
+    ++ buildTree 0 model.ptree model.startColor
+    ++ drawDraggable model
+    ++ drawInsertable model
+    ++ drawHint model
+      |> collage model.width model.height
+      |> toHtml

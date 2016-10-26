@@ -6525,6 +6525,385 @@ return {
 var _elm_lang$core$Process$kill = _elm_lang$core$Native_Scheduler.kill;
 var _elm_lang$core$Process$sleep = _elm_lang$core$Native_Scheduler.sleep;
 var _elm_lang$core$Process$spawn = _elm_lang$core$Native_Scheduler.spawn;
+var _elm_lang$core$Random$onSelfMsg = F3(
+	function (_p1, _p0, seed) {
+		return _elm_lang$core$Task$succeed(seed);
+	});
+var _elm_lang$core$Random$magicNum8 = 2147483562;
+var _elm_lang$core$Random$range = function (_p2) {
+	return {ctor: '_Tuple2', _0: 0, _1: _elm_lang$core$Random$magicNum8};
+};
+var _elm_lang$core$Random$magicNum7 = 2147483399;
+var _elm_lang$core$Random$magicNum6 = 2147483563;
+var _elm_lang$core$Random$magicNum5 = 3791;
+var _elm_lang$core$Random$magicNum4 = 40692;
+var _elm_lang$core$Random$magicNum3 = 52774;
+var _elm_lang$core$Random$magicNum2 = 12211;
+var _elm_lang$core$Random$magicNum1 = 53668;
+var _elm_lang$core$Random$magicNum0 = 40014;
+var _elm_lang$core$Random$step = F2(
+	function (_p3, seed) {
+		var _p4 = _p3;
+		return _p4._0(seed);
+	});
+var _elm_lang$core$Random$onEffects = F3(
+	function (router, commands, seed) {
+		var _p5 = commands;
+		if (_p5.ctor === '[]') {
+			return _elm_lang$core$Task$succeed(seed);
+		} else {
+			var _p6 = A2(_elm_lang$core$Random$step, _p5._0._0, seed);
+			var value = _p6._0;
+			var newSeed = _p6._1;
+			return A2(
+				_elm_lang$core$Task$andThen,
+				A2(_elm_lang$core$Platform$sendToApp, router, value),
+				function (_p7) {
+					return A3(_elm_lang$core$Random$onEffects, router, _p5._1, newSeed);
+				});
+		}
+	});
+var _elm_lang$core$Random$listHelp = F4(
+	function (list, n, generate, seed) {
+		listHelp:
+		while (true) {
+			if (_elm_lang$core$Native_Utils.cmp(n, 1) < 0) {
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$List$reverse(list),
+					_1: seed
+				};
+			} else {
+				var _p8 = generate(seed);
+				var value = _p8._0;
+				var newSeed = _p8._1;
+				var _v2 = A2(_elm_lang$core$List_ops['::'], value, list),
+					_v3 = n - 1,
+					_v4 = generate,
+					_v5 = newSeed;
+				list = _v2;
+				n = _v3;
+				generate = _v4;
+				seed = _v5;
+				continue listHelp;
+			}
+		}
+	});
+var _elm_lang$core$Random$minInt = -2147483648;
+var _elm_lang$core$Random$maxInt = 2147483647;
+var _elm_lang$core$Random$iLogBase = F2(
+	function (b, i) {
+		return (_elm_lang$core$Native_Utils.cmp(i, b) < 0) ? 1 : (1 + A2(_elm_lang$core$Random$iLogBase, b, (i / b) | 0));
+	});
+var _elm_lang$core$Random$command = _elm_lang$core$Native_Platform.leaf('Random');
+var _elm_lang$core$Random$Generator = function (a) {
+	return {ctor: 'Generator', _0: a};
+};
+var _elm_lang$core$Random$list = F2(
+	function (n, _p9) {
+		var _p10 = _p9;
+		return _elm_lang$core$Random$Generator(
+			function (seed) {
+				return A4(
+					_elm_lang$core$Random$listHelp,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					n,
+					_p10._0,
+					seed);
+			});
+	});
+var _elm_lang$core$Random$map = F2(
+	function (func, _p11) {
+		var _p12 = _p11;
+		return _elm_lang$core$Random$Generator(
+			function (seed0) {
+				var _p13 = _p12._0(seed0);
+				var a = _p13._0;
+				var seed1 = _p13._1;
+				return {
+					ctor: '_Tuple2',
+					_0: func(a),
+					_1: seed1
+				};
+			});
+	});
+var _elm_lang$core$Random$map2 = F3(
+	function (func, _p15, _p14) {
+		var _p16 = _p15;
+		var _p17 = _p14;
+		return _elm_lang$core$Random$Generator(
+			function (seed0) {
+				var _p18 = _p16._0(seed0);
+				var a = _p18._0;
+				var seed1 = _p18._1;
+				var _p19 = _p17._0(seed1);
+				var b = _p19._0;
+				var seed2 = _p19._1;
+				return {
+					ctor: '_Tuple2',
+					_0: A2(func, a, b),
+					_1: seed2
+				};
+			});
+	});
+var _elm_lang$core$Random$pair = F2(
+	function (genA, genB) {
+		return A3(
+			_elm_lang$core$Random$map2,
+			F2(
+				function (v0, v1) {
+					return {ctor: '_Tuple2', _0: v0, _1: v1};
+				}),
+			genA,
+			genB);
+	});
+var _elm_lang$core$Random$map3 = F4(
+	function (func, _p22, _p21, _p20) {
+		var _p23 = _p22;
+		var _p24 = _p21;
+		var _p25 = _p20;
+		return _elm_lang$core$Random$Generator(
+			function (seed0) {
+				var _p26 = _p23._0(seed0);
+				var a = _p26._0;
+				var seed1 = _p26._1;
+				var _p27 = _p24._0(seed1);
+				var b = _p27._0;
+				var seed2 = _p27._1;
+				var _p28 = _p25._0(seed2);
+				var c = _p28._0;
+				var seed3 = _p28._1;
+				return {
+					ctor: '_Tuple2',
+					_0: A3(func, a, b, c),
+					_1: seed3
+				};
+			});
+	});
+var _elm_lang$core$Random$map4 = F5(
+	function (func, _p32, _p31, _p30, _p29) {
+		var _p33 = _p32;
+		var _p34 = _p31;
+		var _p35 = _p30;
+		var _p36 = _p29;
+		return _elm_lang$core$Random$Generator(
+			function (seed0) {
+				var _p37 = _p33._0(seed0);
+				var a = _p37._0;
+				var seed1 = _p37._1;
+				var _p38 = _p34._0(seed1);
+				var b = _p38._0;
+				var seed2 = _p38._1;
+				var _p39 = _p35._0(seed2);
+				var c = _p39._0;
+				var seed3 = _p39._1;
+				var _p40 = _p36._0(seed3);
+				var d = _p40._0;
+				var seed4 = _p40._1;
+				return {
+					ctor: '_Tuple2',
+					_0: A4(func, a, b, c, d),
+					_1: seed4
+				};
+			});
+	});
+var _elm_lang$core$Random$map5 = F6(
+	function (func, _p45, _p44, _p43, _p42, _p41) {
+		var _p46 = _p45;
+		var _p47 = _p44;
+		var _p48 = _p43;
+		var _p49 = _p42;
+		var _p50 = _p41;
+		return _elm_lang$core$Random$Generator(
+			function (seed0) {
+				var _p51 = _p46._0(seed0);
+				var a = _p51._0;
+				var seed1 = _p51._1;
+				var _p52 = _p47._0(seed1);
+				var b = _p52._0;
+				var seed2 = _p52._1;
+				var _p53 = _p48._0(seed2);
+				var c = _p53._0;
+				var seed3 = _p53._1;
+				var _p54 = _p49._0(seed3);
+				var d = _p54._0;
+				var seed4 = _p54._1;
+				var _p55 = _p50._0(seed4);
+				var e = _p55._0;
+				var seed5 = _p55._1;
+				return {
+					ctor: '_Tuple2',
+					_0: A5(func, a, b, c, d, e),
+					_1: seed5
+				};
+			});
+	});
+var _elm_lang$core$Random$andThen = F2(
+	function (_p56, callback) {
+		var _p57 = _p56;
+		return _elm_lang$core$Random$Generator(
+			function (seed) {
+				var _p58 = _p57._0(seed);
+				var result = _p58._0;
+				var newSeed = _p58._1;
+				var _p59 = callback(result);
+				var genB = _p59._0;
+				return genB(newSeed);
+			});
+	});
+var _elm_lang$core$Random$State = F2(
+	function (a, b) {
+		return {ctor: 'State', _0: a, _1: b};
+	});
+var _elm_lang$core$Random$initState = function (s$) {
+	var s = A2(_elm_lang$core$Basics$max, s$, 0 - s$);
+	var q = (s / (_elm_lang$core$Random$magicNum6 - 1)) | 0;
+	var s2 = A2(_elm_lang$core$Basics_ops['%'], q, _elm_lang$core$Random$magicNum7 - 1);
+	var s1 = A2(_elm_lang$core$Basics_ops['%'], s, _elm_lang$core$Random$magicNum6 - 1);
+	return A2(_elm_lang$core$Random$State, s1 + 1, s2 + 1);
+};
+var _elm_lang$core$Random$next = function (_p60) {
+	var _p61 = _p60;
+	var _p63 = _p61._1;
+	var _p62 = _p61._0;
+	var k$ = (_p63 / _elm_lang$core$Random$magicNum3) | 0;
+	var s2$ = (_elm_lang$core$Random$magicNum4 * (_p63 - (k$ * _elm_lang$core$Random$magicNum3))) - (k$ * _elm_lang$core$Random$magicNum5);
+	var s2$$ = (_elm_lang$core$Native_Utils.cmp(s2$, 0) < 0) ? (s2$ + _elm_lang$core$Random$magicNum7) : s2$;
+	var k = (_p62 / _elm_lang$core$Random$magicNum1) | 0;
+	var s1$ = (_elm_lang$core$Random$magicNum0 * (_p62 - (k * _elm_lang$core$Random$magicNum1))) - (k * _elm_lang$core$Random$magicNum2);
+	var s1$$ = (_elm_lang$core$Native_Utils.cmp(s1$, 0) < 0) ? (s1$ + _elm_lang$core$Random$magicNum6) : s1$;
+	var z = s1$$ - s2$$;
+	var z$ = (_elm_lang$core$Native_Utils.cmp(z, 1) < 0) ? (z + _elm_lang$core$Random$magicNum8) : z;
+	return {
+		ctor: '_Tuple2',
+		_0: z$,
+		_1: A2(_elm_lang$core$Random$State, s1$$, s2$$)
+	};
+};
+var _elm_lang$core$Random$split = function (_p64) {
+	var _p65 = _p64;
+	var _p68 = _p65._1;
+	var _p67 = _p65._0;
+	var _p66 = _elm_lang$core$Basics$snd(
+		_elm_lang$core$Random$next(_p65));
+	var t1 = _p66._0;
+	var t2 = _p66._1;
+	var new_s2 = _elm_lang$core$Native_Utils.eq(_p68, 1) ? (_elm_lang$core$Random$magicNum7 - 1) : (_p68 - 1);
+	var new_s1 = _elm_lang$core$Native_Utils.eq(_p67, _elm_lang$core$Random$magicNum6 - 1) ? 1 : (_p67 + 1);
+	return {
+		ctor: '_Tuple2',
+		_0: A2(_elm_lang$core$Random$State, new_s1, t2),
+		_1: A2(_elm_lang$core$Random$State, t1, new_s2)
+	};
+};
+var _elm_lang$core$Random$Seed = function (a) {
+	return {ctor: 'Seed', _0: a};
+};
+var _elm_lang$core$Random$int = F2(
+	function (a, b) {
+		return _elm_lang$core$Random$Generator(
+			function (_p69) {
+				var _p70 = _p69;
+				var _p75 = _p70._0;
+				var base = 2147483561;
+				var f = F3(
+					function (n, acc, state) {
+						f:
+						while (true) {
+							var _p71 = n;
+							if (_p71 === 0) {
+								return {ctor: '_Tuple2', _0: acc, _1: state};
+							} else {
+								var _p72 = _p75.next(state);
+								var x = _p72._0;
+								var state$ = _p72._1;
+								var _v27 = n - 1,
+									_v28 = x + (acc * base),
+									_v29 = state$;
+								n = _v27;
+								acc = _v28;
+								state = _v29;
+								continue f;
+							}
+						}
+					});
+				var _p73 = (_elm_lang$core$Native_Utils.cmp(a, b) < 0) ? {ctor: '_Tuple2', _0: a, _1: b} : {ctor: '_Tuple2', _0: b, _1: a};
+				var lo = _p73._0;
+				var hi = _p73._1;
+				var k = (hi - lo) + 1;
+				var n = A2(_elm_lang$core$Random$iLogBase, base, k);
+				var _p74 = A3(f, n, 1, _p75.state);
+				var v = _p74._0;
+				var state$ = _p74._1;
+				return {
+					ctor: '_Tuple2',
+					_0: lo + A2(_elm_lang$core$Basics_ops['%'], v, k),
+					_1: _elm_lang$core$Random$Seed(
+						_elm_lang$core$Native_Utils.update(
+							_p75,
+							{state: state$}))
+				};
+			});
+	});
+var _elm_lang$core$Random$bool = A2(
+	_elm_lang$core$Random$map,
+	F2(
+		function (x, y) {
+			return _elm_lang$core$Native_Utils.eq(x, y);
+		})(1),
+	A2(_elm_lang$core$Random$int, 0, 1));
+var _elm_lang$core$Random$float = F2(
+	function (a, b) {
+		return _elm_lang$core$Random$Generator(
+			function (seed) {
+				var _p76 = A2(
+					_elm_lang$core$Random$step,
+					A2(_elm_lang$core$Random$int, _elm_lang$core$Random$minInt, _elm_lang$core$Random$maxInt),
+					seed);
+				var number = _p76._0;
+				var newSeed = _p76._1;
+				var negativeOneToOne = _elm_lang$core$Basics$toFloat(number) / _elm_lang$core$Basics$toFloat(_elm_lang$core$Random$maxInt - _elm_lang$core$Random$minInt);
+				var _p77 = (_elm_lang$core$Native_Utils.cmp(a, b) < 0) ? {ctor: '_Tuple2', _0: a, _1: b} : {ctor: '_Tuple2', _0: b, _1: a};
+				var lo = _p77._0;
+				var hi = _p77._1;
+				var scaled = ((lo + hi) / 2) + ((hi - lo) * negativeOneToOne);
+				return {ctor: '_Tuple2', _0: scaled, _1: newSeed};
+			});
+	});
+var _elm_lang$core$Random$initialSeed = function (n) {
+	return _elm_lang$core$Random$Seed(
+		{
+			state: _elm_lang$core$Random$initState(n),
+			next: _elm_lang$core$Random$next,
+			split: _elm_lang$core$Random$split,
+			range: _elm_lang$core$Random$range
+		});
+};
+var _elm_lang$core$Random$init = A2(
+	_elm_lang$core$Task$andThen,
+	_elm_lang$core$Time$now,
+	function (t) {
+		return _elm_lang$core$Task$succeed(
+			_elm_lang$core$Random$initialSeed(
+				_elm_lang$core$Basics$round(t)));
+	});
+var _elm_lang$core$Random$Generate = function (a) {
+	return {ctor: 'Generate', _0: a};
+};
+var _elm_lang$core$Random$generate = F2(
+	function (tagger, generator) {
+		return _elm_lang$core$Random$command(
+			_elm_lang$core$Random$Generate(
+				A2(_elm_lang$core$Random$map, tagger, generator)));
+	});
+var _elm_lang$core$Random$cmdMap = F2(
+	function (func, _p78) {
+		var _p79 = _p78;
+		return _elm_lang$core$Random$Generate(
+			A2(_elm_lang$core$Random$map, func, _p79._0));
+	});
+_elm_lang$core$Native_Platform.effectManagers['Random'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Random$init, onEffects: _elm_lang$core$Random$onEffects, onSelfMsg: _elm_lang$core$Random$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Random$cmdMap};
 var _elm_lang$core$Regex$split = _elm_lang$core$Native_Regex.split;
 var _elm_lang$core$Regex$replace = _elm_lang$core$Native_Regex.replace;
 var _elm_lang$core$Regex$find = _elm_lang$core$Native_Regex.find;
@@ -11698,29 +12077,59 @@ var _mdgriffith$elm_color_mixing$Color_Mixing$saturate = F2(
 		var sat = A3(_elm_lang$core$Basics$clamp, 0, 1, colorHSL.saturation + x);
 		return A4(_elm_lang$core$Color$hsla, colorHSL.hue, sat, colorHSL.lightness, colorHSL.alpha);
 	});
+var _user$project$Math$calculateCrossProduct = F3(
+	function (_p2, _p1, _p0) {
+		var _p3 = _p2;
+		var _p4 = _p1;
+		var _p7 = _p4._1;
+		var _p6 = _p4._0;
+		var _p5 = _p0;
+		return ((_p6 - _p3._0) * (_p5._1 - _p7)) - ((_p7 - _p3._1) * (_p5._0 - _p6));
+	});
+var _user$project$Math$liesInPolygon = F2(
+	function (point, polygon) {
+		var l2 = A2(
+			_elm_lang$core$Basics_ops['++'],
+			A2(_elm_lang$core$List$drop, 1, polygon),
+			A2(_elm_lang$core$List$take, 1, polygon));
+		var l1 = polygon;
+		return A2(
+			_elm_lang$core$List$all,
+			function (_p8) {
+				var _p9 = _p8;
+				return _elm_lang$core$Native_Utils.cmp(
+					A3(_user$project$Math$calculateCrossProduct, _p9._0, _p9._1, point),
+					0) < 0;
+			},
+			A3(
+				_elm_lang$core$List$map2,
+				F2(
+					function (v0, v1) {
+						return {ctor: '_Tuple2', _0: v0, _1: v1};
+					}),
+				l1,
+				l2));
+	});
 var _user$project$Math$calculateClosestPoint = F2(
-	function (_p1, _p0) {
-		var _p2 = _p1;
-		var _p7 = _p2._1._1;
-		var _p6 = _p2._0._1;
-		var _p5 = _p2._1._0;
-		var _p4 = _p2._0._0;
-		var _p3 = _p0;
-		var yDelta = _p7 - _p6;
-		var xDelta = _p5 - _p4;
-		var u = (((_p3._0 - _p4) * xDelta) + ((_p3._1 - _p6) * yDelta)) / ((xDelta * xDelta) + (yDelta * yDelta));
-		var closestPoint = (_elm_lang$core$Native_Utils.cmp(u, 0) < 0) ? {ctor: '_Tuple2', _0: _p4, _1: _p6} : ((_elm_lang$core$Native_Utils.cmp(u, 1) > 0) ? {ctor: '_Tuple2', _0: _p5, _1: _p7} : {ctor: '_Tuple2', _0: _p4 + (u * xDelta), _1: _p6 + (u * yDelta)});
-		return closestPoint;
+	function (_p11, _p10) {
+		var _p12 = _p11;
+		var _p17 = _p12._1._1;
+		var _p16 = _p12._0._1;
+		var _p15 = _p12._1._0;
+		var _p14 = _p12._0._0;
+		var _p13 = _p10;
+		var yDelta = _p17 - _p16;
+		var xDelta = _p15 - _p14;
+		var u = (((_p13._0 - _p14) * xDelta) + ((_p13._1 - _p16) * yDelta)) / ((xDelta * xDelta) + (yDelta * yDelta));
+		return (_elm_lang$core$Native_Utils.cmp(u, 0) < 0) ? {ctor: '_Tuple2', _0: _p14, _1: _p16} : ((_elm_lang$core$Native_Utils.cmp(u, 1) > 0) ? {ctor: '_Tuple2', _0: _p15, _1: _p17} : {ctor: '_Tuple2', _0: _p14 + (u * xDelta), _1: _p16 + (u * yDelta)});
 	});
 var _user$project$Math$calculateDistance = F2(
-	function (_p9, _p8) {
-		var _p10 = _p9;
-		var _p15 = _p10._1;
-		var _p14 = _p10._0;
-		var _p11 = _p8;
-		var _p13 = _p11._1;
-		var _p12 = _p11._0;
-		return _elm_lang$core$Basics$sqrt(((_p12 - _p14) * (_p12 - _p14)) + ((_p13 - _p15) * (_p13 - _p15)));
+	function (_p19, _p18) {
+		var _p20 = _p19;
+		var _p21 = _p18;
+		var b = _p21._1 - _p20._1;
+		var a = _p21._0 - _p20._0;
+		return _elm_lang$core$Basics$sqrt((a * a) + (b * b));
 	});
 var _user$project$Math$calculateAngle = F3(
 	function (p1, p2, p3) {
@@ -11728,6 +12137,47 @@ var _user$project$Math$calculateAngle = F3(
 		var b = A2(_user$project$Math$calculateDistance, p2, p3);
 		var a = A2(_user$project$Math$calculateDistance, p1, p2);
 		return _elm_lang$core$Basics$acos((((a * a) + (b * b)) - (c * c)) / ((2 * a) * b));
+	});
+var _user$project$Helpers$colorFromList = function (integers) {
+	var integerArray = _elm_lang$core$Array$fromList(integers);
+	var getValueWithDefault = F2(
+		function (i, array) {
+			var _p0 = A2(_elm_lang$core$Array$get, i, array);
+			if (_p0.ctor === 'Nothing') {
+				return 0;
+			} else {
+				return _p0._0;
+			}
+		});
+	var r = A2(getValueWithDefault, 0, integerArray);
+	var g = A2(getValueWithDefault, 1, integerArray);
+	var b = A2(getValueWithDefault, 2, integerArray);
+	return A3(_elm_lang$core$Color$rgb, r, g, b);
+};
+var _user$project$Helpers$drawPoint = F3(
+	function (color, radius, point) {
+		return A2(
+			_evancz$elm_graphics$Collage$move,
+			point,
+			A2(
+				_evancz$elm_graphics$Collage$filled,
+				color,
+				_evancz$elm_graphics$Collage$circle(
+					_elm_lang$core$Basics$toFloat(radius))));
+	});
+var _user$project$Helpers$screenCoordsToCollage = F2(
+	function (screenCoord, screenSize) {
+		return _elm_lang$core$Basics$toFloat(screenCoord) - (_elm_lang$core$Basics$toFloat(screenSize) / 2);
+	});
+var _user$project$Helpers$screenPointToCollage = F2(
+	function (_p2, _p1) {
+		var _p3 = _p2;
+		var _p4 = _p1;
+		return {
+			ctor: '_Tuple2',
+			_0: A2(_user$project$Helpers$screenCoordsToCollage, _p3._0, _p4._0),
+			_1: 0 - A2(_user$project$Helpers$screenCoordsToCollage, _p3._1, _p4._1)
+		};
 	});
 var _user$project$Pythagoras$buildTree$ = function (_p0) {
 	var _p1 = _p0;
@@ -11765,15 +12215,19 @@ var _user$project$Pythagoras$buildTree$ = function (_p0) {
 		return A2(
 			_elm_lang$core$Basics_ops['++'],
 			_elm_lang$core$Native_List.fromArray(
-				[formRight]),
+				[]),
 			A2(
 				_elm_lang$core$Basics_ops['++'],
-				_user$project$Pythagoras$buildTree$(rightConfig),
+				_elm_lang$core$Native_List.fromArray(
+					[formRight]),
 				A2(
 					_elm_lang$core$Basics_ops['++'],
-					_elm_lang$core$Native_List.fromArray(
-						[formLeft]),
-					_user$project$Pythagoras$buildTree$(leftConfig))));
+					_user$project$Pythagoras$buildTree$(rightConfig),
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_elm_lang$core$Native_List.fromArray(
+							[formLeft]),
+						_user$project$Pythagoras$buildTree$(leftConfig)))));
 	} else {
 		return _elm_lang$core$Native_List.fromArray(
 			[formLeft, formRight]);
@@ -11811,21 +12265,20 @@ var _user$project$Pythagoras$getPoint = F2(
 			return {ctor: '_Tuple2', _0: 0, _1: 0};
 		}
 	});
+var _user$project$Pythagoras$getOnlyEdgePoints = function (model) {
+	var p3 = A2(_user$project$Pythagoras$getPoint, model.points, model.e3);
+	var p2 = A2(_user$project$Pythagoras$getPoint, model.points, model.e2);
+	var p1 = A2(_user$project$Pythagoras$getPoint, model.points, model.e1);
+	var p0 = A2(_user$project$Pythagoras$getPoint, model.points, model.e0);
+	return _elm_lang$core$Native_List.fromArray(
+		[p0, p1, p2, p3]);
+};
 var _user$project$Pythagoras$buildMatrices = function (model) {
 	var r = 90 * (_elm_lang$core$Basics$pi / 180);
 	var p3 = A2(_user$project$Pythagoras$getPoint, model.points, model.e3);
-	var _p9 = p3;
-	var p3x = _p9._0;
-	var p3y = _p9._1;
 	var p2 = A2(_user$project$Pythagoras$getPoint, model.points, model.e2);
-	var _p10 = p2;
-	var p2x = _p10._0;
-	var p2y = _p10._1;
 	var bottomLength = A2(_user$project$Math$calculateDistance, p2, p3);
 	var p1 = A2(_user$project$Pythagoras$getPoint, model.points, model.e1);
-	var _p11 = p1;
-	var p1x = _p11._0;
-	var p1y = _p11._1;
 	var rightLength = A2(_user$project$Math$calculateDistance, p1, model.point);
 	var rightRatio = rightLength / bottomLength;
 	var bottomAngle = r - A3(_user$project$Math$calculateAngle, p3, p2, p1);
@@ -11858,12 +12311,27 @@ var _user$project$Pythagoras$buildTree = F3(
 				[form]),
 			_user$project$Pythagoras$buildTree$(config));
 	});
+var _user$project$Pythagoras$updateEdgeIndices = F3(
+	function (n, op, model) {
+		var bump = function (index) {
+			return (_elm_lang$core$Native_Utils.cmp(index, n) > -1) ? 1 : 0;
+		};
+		var e1 = A2(
+			op,
+			model.e1,
+			bump(model.e1));
+		var e2 = A2(
+			op,
+			model.e2,
+			bump(model.e2));
+		var e3 = A2(
+			op,
+			model.e3,
+			bump(model.e3));
+		return {ctor: '_Tuple3', _0: e1, _1: e2, _2: e3};
+	});
 var _user$project$Pythagoras$insertPoint = F3(
 	function (n, point, model) {
-		var bump = F2(
-			function (index, n$) {
-				return (_elm_lang$core$Native_Utils.cmp(index, n$) > -1) ? 1 : 0;
-			});
 		var n = n + 1;
 		var points = A2(
 			_elm_lang$core$Basics_ops['++'],
@@ -11873,9 +12341,38 @@ var _user$project$Pythagoras$insertPoint = F3(
 				_elm_lang$core$Native_List.fromArray(
 					[point]),
 				A2(_elm_lang$core$List$drop, n, model.points)));
-		var e1 = model.e1 + A2(bump, model.e1, n);
-		var e2 = model.e2 + A2(bump, model.e2, n);
-		var e3 = model.e3 + A2(bump, model.e3, n);
+		var _p9 = A3(
+			_user$project$Pythagoras$updateEdgeIndices,
+			n,
+			F2(
+				function (x, y) {
+					return x + y;
+				}),
+			model);
+		var e1 = _p9._0;
+		var e2 = _p9._1;
+		var e3 = _p9._2;
+		return _elm_lang$core$Native_Utils.update(
+			model,
+			{points: points, e1: e1, e2: e2, e3: e3});
+	});
+var _user$project$Pythagoras$removePoint = F2(
+	function (n, model) {
+		var _p10 = A3(
+			_user$project$Pythagoras$updateEdgeIndices,
+			n,
+			F2(
+				function (x, y) {
+					return x - y;
+				}),
+			model);
+		var e1 = _p10._0;
+		var e2 = _p10._1;
+		var e3 = _p10._2;
+		var points = A2(
+			_elm_lang$core$Basics_ops['++'],
+			A2(_elm_lang$core$List$take, n, model.points),
+			A2(_elm_lang$core$List$drop, n + 1, model.points));
 		return _elm_lang$core$Native_Utils.update(
 			model,
 			{points: points, e1: e1, e2: e2, e3: e3});
@@ -11901,9 +12398,9 @@ var _user$project$Pythagoras$updatePoint = F2(
 var _user$project$Pythagoras$rectangle = function (factor) {
 	return A2(
 		_elm_lang$core$List$map,
-		function (_p12) {
-			var _p13 = _p12;
-			return {ctor: '_Tuple2', _0: _p13._0 * factor, _1: _p13._1 * factor};
+		function (_p11) {
+			var _p12 = _p11;
+			return {ctor: '_Tuple2', _0: _p12._0 * factor, _1: _p12._1 * factor};
 		},
 		_elm_lang$core$Native_List.fromArray(
 			[
@@ -11918,9 +12415,9 @@ var _user$project$Pythagoras$init = function () {
 	var factor = 100;
 	var rect = A2(
 		_elm_lang$core$List$map,
-		function (_p14) {
-			var _p15 = _p14;
-			return {ctor: '_Tuple2', _0: _p15._0, _1: _p15._1 + translationY};
+		function (_p13) {
+			var _p14 = _p13;
+			return {ctor: '_Tuple2', _0: _p14._0, _1: _p14._1 + translationY};
 		},
 		_user$project$Pythagoras$rectangle(factor));
 	return {
@@ -11959,41 +12456,19 @@ var _user$project$Main$drawHint = function (model) {
 	return _elm_lang$core$Native_List.fromArray(
 		[form]);
 };
-var _user$project$Main$screenCoordsToCollage = F2(
-	function (screenCoord, screenSize) {
-		return _elm_lang$core$Basics$toFloat(screenCoord) - (_elm_lang$core$Basics$toFloat(screenSize) / 2);
-	});
-var _user$project$Main$drawRectangle = F3(
-	function (color, width, height) {
-		return A2(
-			_evancz$elm_graphics$Collage$filled,
-			color,
-			A2(
-				_evancz$elm_graphics$Collage$rect,
-				_elm_lang$core$Basics$toFloat(width),
-				_elm_lang$core$Basics$toFloat(height)));
-	});
 var _user$project$Main$drawBackground = function (_p0) {
 	var _p1 = _p0;
-	return A3(
-		_user$project$Main$drawRectangle,
-		A3(_elm_lang$core$Color$rgb, 30, 30, 30),
-		_p1.width,
-		_p1.height);
+	return A2(
+		_evancz$elm_graphics$Collage$filled,
+		_p1.backgroundColor,
+		A2(
+			_evancz$elm_graphics$Collage$rect,
+			_elm_lang$core$Basics$toFloat(_p1.width),
+			_elm_lang$core$Basics$toFloat(_p1.height)));
 };
 var _user$project$Main$dotSize = 6;
-var _user$project$Main$drawPoint = F2(
-	function (color, point) {
-		return A2(
-			_evancz$elm_graphics$Collage$move,
-			point,
-			A2(
-				_evancz$elm_graphics$Collage$filled,
-				color,
-				_evancz$elm_graphics$Collage$circle(_user$project$Main$dotSize)));
-	});
 var _user$project$Main$drawDraggable = function (model) {
-	if (model.isDragging) {
+	if (model.mouseIsDown) {
 		return _elm_lang$core$Native_List.fromArray(
 			[]);
 	} else {
@@ -12004,9 +12479,10 @@ var _user$project$Main$drawDraggable = function (model) {
 		} else {
 			return _elm_lang$core$Native_List.fromArray(
 				[
-					A2(
-					_user$project$Main$drawPoint,
+					A3(
+					_user$project$Helpers$drawPoint,
 					A4(_elm_lang$core$Color$rgba, 255, 255, 255, 0.6),
+					_user$project$Main$dotSize,
 					_p2._0.point)
 				]);
 		}
@@ -12022,9 +12498,10 @@ var _user$project$Main$drawInsertable = function (model) {
 		} else {
 			return _elm_lang$core$Native_List.fromArray(
 				[
-					A2(
-					_user$project$Main$drawPoint,
+					A3(
+					_user$project$Helpers$drawPoint,
 					A4(_elm_lang$core$Color$rgba, 255, 255, 255, 0.6),
+					_user$project$Main$dotSize,
 					_p4._0.point)
 				]);
 		}
@@ -12057,12 +12534,6 @@ var _user$project$Main$view = function (model) {
 							_user$project$Main$drawHint(model)))))));
 };
 var _user$project$Main$maxDistance = 20;
-var _user$project$Main$isClose = F2(
-	function (p1, p2) {
-		return _elm_lang$core$Native_Utils.cmp(
-			A2(_user$project$Math$calculateDistance, p1, p2),
-			_user$project$Main$maxDistance) < 0;
-	});
 var _user$project$Main$findHovered = F2(
 	function (mouse, draggables) {
 		findHovered:
@@ -12072,7 +12543,9 @@ var _user$project$Main$findHovered = F2(
 				return _elm_lang$core$Maybe$Nothing;
 			} else {
 				var _p6 = _p5._0;
-				if (A2(_user$project$Main$isClose, mouse, _p6.point)) {
+				if (_elm_lang$core$Native_Utils.cmp(
+					A2(_user$project$Math$calculateDistance, mouse, _p6.point),
+					_user$project$Main$maxDistance) < 0) {
 					return _elm_lang$core$Maybe$Just(_p6);
 				} else {
 					var _v5 = mouse,
@@ -12152,7 +12625,9 @@ var _user$project$Main$Model = function (a) {
 								return function (i) {
 									return function (j) {
 										return function (k) {
-											return {width: a, height: b, mouseX: c, mouseY: d, backgroundColor: e, startColor: f, ptree: g, draggables: h, currentDraggable: i, insertable: j, isDragging: k};
+											return function (l) {
+												return {width: a, height: b, mouseX: c, mouseY: d, backgroundColor: e, startColor: f, ptree: g, draggables: h, currentDraggable: i, insertable: j, mouseIsDown: k, hasDragged: l};
+											};
 										};
 									};
 								};
@@ -12186,6 +12661,12 @@ var _user$project$Main$updateDraggables = function (ptree) {
 				}),
 			ptree.points));
 };
+var _user$project$Main$RandomizeStartColor = function (a) {
+	return {ctor: 'RandomizeStartColor', _0: a};
+};
+var _user$project$Main$RandomizeBackgroundColor = function (a) {
+	return {ctor: 'RandomizeBackgroundColor', _0: a};
+};
 var _user$project$Main$update = F2(
 	function (msg, model) {
 		var _p10 = msg;
@@ -12201,20 +12682,18 @@ var _user$project$Main$update = F2(
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'MouseMove':
+				var hasDragged = model.mouseIsDown;
 				var insertable = _user$project$Main$findInsertable(model);
-				var y$ = A2(_user$project$Main$screenCoordsToCollage, _p10._1, model.height);
-				var x$ = A2(_user$project$Main$screenCoordsToCollage, _p10._0, model.width);
-				var p = {ctor: '_Tuple2', _0: x$, _1: 0 - y$};
-				var draggable = function () {
-					var _p11 = model.isDragging;
-					if (_p11 === false) {
-						return A2(_user$project$Main$findHovered, p, model.draggables);
-					} else {
-						return model.currentDraggable;
-					}
-				}();
+				var p = A2(
+					_user$project$Helpers$screenPointToCollage,
+					{ctor: '_Tuple2', _0: _p10._0, _1: _p10._1},
+					{ctor: '_Tuple2', _0: model.width, _1: model.height});
+				var _p11 = p;
+				var mouseX = _p11._0;
+				var mouseY = _p11._1;
+				var draggable = model.mouseIsDown ? model.currentDraggable : A2(_user$project$Main$findHovered, p, model.draggables);
 				var model$ = function () {
-					if (model.isDragging) {
+					if (model.mouseIsDown) {
 						var _p12 = model.currentDraggable;
 						if (_p12.ctor === 'Nothing') {
 							return model;
@@ -12240,7 +12719,7 @@ var _user$project$Main$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model$,
-						{mouseX: x$, mouseY: 0 - y$, currentDraggable: draggable, insertable: insertable}),
+						{mouseX: mouseX, mouseY: mouseY, hasDragged: hasDragged, currentDraggable: draggable, insertable: insertable}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'MouseDown':
@@ -12262,7 +12741,7 @@ var _user$project$Main$update = F2(
 							draggables);
 						return _elm_lang$core$Native_Utils.update(
 							model,
-							{isDragging: true, ptree: ptree, draggables: draggables, currentDraggable: draggable});
+							{mouseIsDown: true, ptree: ptree, draggables: draggables, currentDraggable: draggable});
 					} else {
 						return model;
 					}
@@ -12271,16 +12750,78 @@ var _user$project$Main$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{isDragging: true}),
+						{mouseIsDown: true}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
-			default:
-				var draggables = _user$project$Main$updateDraggables(model.ptree);
+			case 'MouseUp':
+				var p = A2(
+					_user$project$Helpers$screenPointToCollage,
+					{ctor: '_Tuple2', _0: _p10._0, _1: _p10._1},
+					{ctor: '_Tuple2', _0: model.width, _1: model.height});
+				var cmd = function () {
+					if (model.hasDragged) {
+						return _elm_lang$core$Platform_Cmd$none;
+					} else {
+						var _p16 = model.currentDraggable;
+						if (_p16.ctor === 'Nothing') {
+							var liesInPolygon = A2(
+								_user$project$Math$liesInPolygon,
+								p,
+								_user$project$Pythagoras$getOnlyEdgePoints(model.ptree));
+							var random = A2(
+								_elm_lang$core$Random$list,
+								3,
+								A2(_elm_lang$core$Random$int, 0, 255));
+							return liesInPolygon ? A2(_elm_lang$core$Random$generate, _user$project$Main$RandomizeStartColor, random) : A2(_elm_lang$core$Random$generate, _user$project$Main$RandomizeBackgroundColor, random);
+						} else {
+							return _elm_lang$core$Platform_Cmd$none;
+						}
+					}
+				}();
+				var ptree = function () {
+					if (model.hasDragged) {
+						return model.ptree;
+					} else {
+						var _p17 = model.currentDraggable;
+						if (_p17.ctor === 'Nothing') {
+							return model.ptree;
+						} else {
+							var _p18 = _p17._0.draggable;
+							if (_p18.ctor === 'Anchor') {
+								return model.ptree;
+							} else {
+								return A2(_user$project$Pythagoras$removePoint, _p18._0, model.ptree);
+							}
+						}
+					}
+				}();
+				var draggables = _user$project$Main$updateDraggables(ptree);
+				var draggable = A2(_user$project$Main$findHovered, p, draggables);
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{isDragging: false, draggables: draggables, currentDraggable: _elm_lang$core$Maybe$Nothing}),
+						{mouseIsDown: false, draggables: draggables, currentDraggable: draggable, ptree: ptree}),
+					_1: cmd
+				};
+			case 'RandomizeBackgroundColor':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							backgroundColor: _user$project$Helpers$colorFromList(_p10._0)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			default:
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							startColor: _user$project$Helpers$colorFromList(_p10._0)
+						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 		}
@@ -12306,24 +12847,24 @@ var _user$project$Main$subscriptions = function (model) {
 		_elm_lang$core$Native_List.fromArray(
 			[
 				_elm_lang$window$Window$resizes(
-				function (_p16) {
-					var _p17 = _p16;
-					return A2(_user$project$Main$Resize, _p17.width, _p17.height);
+				function (_p19) {
+					var _p20 = _p19;
+					return A2(_user$project$Main$Resize, _p20.width, _p20.height);
 				}),
 				_elm_lang$mouse$Mouse$moves(
-				function (_p18) {
-					var _p19 = _p18;
-					return A2(_user$project$Main$MouseMove, _p19.x, _p19.y);
+				function (_p21) {
+					var _p22 = _p21;
+					return A2(_user$project$Main$MouseMove, _p22.x, _p22.y);
 				}),
 				_elm_lang$mouse$Mouse$downs(
-				function (_p20) {
-					var _p21 = _p20;
-					return A2(_user$project$Main$MouseDown, _p21.x, _p21.y);
+				function (_p23) {
+					var _p24 = _p23;
+					return A2(_user$project$Main$MouseDown, _p24.x, _p24.y);
 				}),
 				_elm_lang$mouse$Mouse$ups(
-				function (_p22) {
-					var _p23 = _p22;
-					return A2(_user$project$Main$MouseUp, _p23.x, _p23.y);
+				function (_p25) {
+					var _p26 = _p25;
+					return A2(_user$project$Main$MouseUp, _p26.x, _p26.y);
 				})
 			]));
 };
@@ -12331,7 +12872,7 @@ var _user$project$Main$initialSizeCmd = function () {
 	var success = function (size) {
 		return A2(_user$project$Main$Resize, size.width, size.height);
 	};
-	var failure = function (_p24) {
+	var failure = function (_p27) {
 		return A2(_user$project$Main$Resize, 500, 500);
 	};
 	return A3(_elm_lang$core$Task$perform, failure, success, _elm_lang$window$Window$size);
@@ -12349,7 +12890,8 @@ var _user$project$Main$init = function () {
 		draggables: _user$project$Main$updateDraggables(ptree),
 		currentDraggable: _elm_lang$core$Maybe$Nothing,
 		insertable: _elm_lang$core$Maybe$Nothing,
-		isDragging: false
+		mouseIsDown: false,
+		hasDragged: false
 	};
 	return {ctor: '_Tuple2', _0: model, _1: _user$project$Main$initialSizeCmd};
 }();

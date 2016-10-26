@@ -308,12 +308,10 @@ update msg model =
                                         Pythagoras.getOnlyEdgePoints model.ptree
                                             |> Math.liesInPolygon p
                                 in
-                                    case liesInPolygon of
-                                        True ->
-                                            Random.generate RandomizeStartColor random
-
-                                        False ->
-                                            Random.generate RandomizeBackgroundColor random
+                                    if liesInPolygon then
+                                        Random.generate RandomizeStartColor random
+                                    else
+                                        Random.generate RandomizeBackgroundColor random
 
                             _ ->
                                 Cmd.none

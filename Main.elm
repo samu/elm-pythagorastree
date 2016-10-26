@@ -295,30 +295,28 @@ update msg model =
                                         Pythagoras.removePoint n model.ptree
 
                 cmd =
-                    case model.hasDragged of
-                        True ->
-                            Cmd.none
+                    if model.hasDragged then
+                        Cmd.none
+                    else
+                        case model.currentDraggable of
+                            Nothing ->
+                                let
+                                    random =
+                                        Random.list 3 (Random.int 0 255)
 
-                        False ->
-                            case model.currentDraggable of
-                                Nothing ->
-                                    let
-                                        random =
-                                            Random.list 3 (Random.int 0 255)
+                                    liesInPolygon =
+                                        Pythagoras.getOnlyEdgePoints model.ptree
+                                            |> Math.liesInPolygon p
+                                in
+                                    case liesInPolygon of
+                                        True ->
+                                            Random.generate RandomizeStartColor random
 
-                                        liesInPolygon =
-                                            Pythagoras.getOnlyEdgePoints model.ptree
-                                                |> Math.liesInPolygon p
-                                    in
-                                        case liesInPolygon of
-                                            True ->
-                                                Random.generate RandomizeStartColor random
+                                        False ->
+                                            Random.generate RandomizeBackgroundColor random
 
-                                            False ->
-                                                Random.generate RandomizeBackgroundColor random
-
-                                _ ->
-                                    Cmd.none
+                            _ ->
+                                Cmd.none
 
                 p =
                     screenPointToCollage ( x, y ) ( model.width, model.height )

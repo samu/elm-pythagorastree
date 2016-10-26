@@ -200,12 +200,10 @@ update msg model =
                     p
 
                 draggable =
-                    case model.mouseIsDown of
-                        False ->
-                            findHovered p model.draggables
-
-                        True ->
-                            model.currentDraggable
+                    if model.mouseIsDown then
+                        model.currentDraggable
+                    else
+                        findHovered p model.draggables
 
                 insertable =
                     findInsertable model

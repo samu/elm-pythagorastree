@@ -15,6 +15,8 @@ import Debug exposing (log)
 import Pythagoras exposing (buildTree)
 import Math exposing (Point, calculateDistance, calculateClosestPoint)
 import Task
+import Random
+import Array
 
 main =
   program { init = init, view = view, update = update, subscriptions = subscriptions }
@@ -83,6 +85,7 @@ type Msg
   | MouseMove Int Int
   | MouseDown Int Int
   | MouseUp Int Int
+  | RandomizeBackgroundColor (List Int)
 
 maxDistance = 20
 dotSize = 6
@@ -185,6 +188,12 @@ update msg model =
                 Anchor -> model.ptree
                 Edge n -> Pythagoras.removePoint n model.ptree
 
+        cmd = case model.hasDragged of
+          True ->
+            Cmd.none
+          False ->
+            Random.generate RandomizeBackgroundColor (Random.list 3 (Random.int 0 255))
+
         draggables = updateDraggables ptree
 
         p = screenPointToCollage (x, y) (model.width, model.height)
@@ -192,7 +201,24 @@ update msg model =
         draggable = findHovered p draggables
       in
         ({model | mouseIsDown = False, draggables = draggables,
-          currentDraggable = draggable, ptree = ptree}, Cmd.none)
+          currentDraggable = draggable, ptree = ptree}, cmd)
+    RandomizeBackgroundColor list ->
+      Debug.log "blapp" ({model | backgroundColor = colorFromList list}, Cmd.none)
+
+colorFromList : List Int -> Color
+colorFromList integers =
+  let
+    getValueWithDefault i array =
+      case Array.get i array of
+        Nothing -> 0
+        Just n -> n
+
+    integerArray = Array.fromList integers
+    r = getValueWithDefault 0 integerArray
+    g = getValueWithDefault 1 integerArray
+    b = getValueWithDefault 2 integerArray
+  in
+    rgb r g b
 
 drawRectangle : Color -> Int -> Int -> Form
 drawRectangle color width height =
@@ -200,7 +226,7 @@ drawRectangle color width height =
 
 drawBackground : Model -> Form
 drawBackground {width, height, backgroundColor} =
-  drawRectangle (rgb 30 30 30) (width) (height)
+  drawRectangle backgroundColor (width) (height)
 
 screenPointToCollage : (Int, Int) -> (Int, Int) -> Point
 screenPointToCollage (mouseX, mouseY) (width, height) =

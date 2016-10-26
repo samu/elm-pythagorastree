@@ -175,14 +175,24 @@ update msg model =
         ({model | mouseIsDown = True}, Cmd.none)
     MouseUp x y ->
       let
-        draggables = updateDraggables model.ptree
+        ptree = case model.hasDragged of
+          True ->
+            model.ptree
+          False ->
+            case model.currentDraggable of
+              Nothing -> model.ptree
+              Just {draggable} -> case draggable of
+                Anchor -> model.ptree
+                Edge n -> Pythagoras.removePoint n model.ptree
+
+        draggables = updateDraggables ptree
 
         p = screenPointToCollage (x, y) (model.width, model.height)
 
         draggable = findHovered p draggables
       in
         ({model | mouseIsDown = False, draggables = draggables,
-          currentDraggable = draggable}, Cmd.none)
+          currentDraggable = draggable, ptree = ptree}, Cmd.none)
 
 drawRectangle : Color -> Int -> Int -> Form
 drawRectangle color width height =

@@ -1,4 +1,5 @@
-module Pythagoras exposing (Model, buildTree, init, updatePoint, updatePoints, insertPoint)
+module Pythagoras exposing (Model, buildTree, init, updatePoint, updatePoints,
+  insertPoint, removePoint)
 import Transform exposing (Transform)
 import Collage exposing (Form, Shape, polygon, groupTransform, filled)
 import Color exposing (Color, rgb)
@@ -41,16 +42,32 @@ updatePoints n point model =
   let f = \n' point' -> if n == n' then point else point'
   in {model | points = List.indexedMap f model.points}
 
+updateEdgeIndices : Int -> (Int -> Int -> Int) -> Model -> (Int, Int, Int)
+updateEdgeIndices n op model =
+  let
+    bump index = if index >= n then 1 else 0
+    e1 = op model.e1 (bump model.e1)
+    e2 = op model.e2 (bump model.e2)
+    e3 = op model.e3 (bump model.e3)
+  in
+    (e1, e2, e3)
+
 insertPoint : Int -> Point -> Model -> Model
 insertPoint n point model =
   let
     n = n + 1
     points = List.take n model.points ++ [point] ++ List.drop n model.points
-    bump index n' = if index >= n' then 1 else 0
-    e1 = model.e1 + bump model.e1 n
-    e2 = model.e2 + bump model.e2 n
-    e3 = model.e3 + bump model.e3 n
-  in {model | points = points, e1 = e1, e2 = e2, e3 = e3}
+    (e1, e2, e3) = updateEdgeIndices n (+) model
+  in
+    {model | points = points, e1 = e1, e2 = e2, e3 = e3}
+
+removePoint : Int -> Model -> Model
+removePoint n model =
+  let
+    points = List.take n model.points ++ List.drop (n + 1) model.points
+    (e1, e2, e3) = updateEdgeIndices n (-) model
+  in
+    {model | points = points, e1 = e1, e2 = e2, e3 = e3}
 
 getPoint : List Point -> Int -> Point
 getPoint points n =

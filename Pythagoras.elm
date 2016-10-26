@@ -97,10 +97,6 @@ buildMatrices model =
     p2 = getPoint model.points model.e2
     p3 = getPoint model.points model.e3
 
-    (p1x, p1y) = p1
-    (p2x, p2y) = p2
-    (p3x, p3y) = p3
-
     bottomLength = calculateDistance p2 p3
     leftLength = calculateDistance p0 model.point
     rightLength = calculateDistance p1 model.point

@@ -256,7 +256,7 @@ drawHint model =
 view : Model -> Html Msg
 view model =
   [drawBackground model]
-    ++ buildTree 0 model.ptree model.startColor
+    ++ buildTree 9 model.ptree model.startColor
     ++ drawDraggable model
     ++ drawInsertable model
     ++ drawHint model

@@ -41,11 +41,6 @@ type alias Model =
   , hasDragged : Bool
   }
 
-updateDraggables : Pythagoras.Model -> List Draggable
-updateDraggables ptree =
-  [{point = ptree.point, draggable = Anchor}]
-  ++ List.indexedMap (\n p -> {point = p, draggable = Edge n}) ptree.points
-
 init : (Model, Cmd Msg)
 init =
   let
@@ -91,6 +86,13 @@ type Msg
 
 maxDistance = 20
 dotSize = 6
+
+
+updateDraggables : Pythagoras.Model -> List Draggable
+updateDraggables ptree =
+  [{point = ptree.point, draggable = Anchor}]
+  ++ List.indexedMap (\n p -> {point = p, draggable = Edge n}) ptree.points
+
 
 findHovered : Point -> List Draggable -> Maybe Draggable
 findHovered mouse draggables =

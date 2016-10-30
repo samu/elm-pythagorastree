@@ -23,25 +23,9 @@ drawPoint color radius point =
 
 colorFromList : List Int -> Color
 colorFromList integers =
-    let
-        getValueWithDefault i array =
-            case Array.get i array of
-                Nothing ->
-                    0
+    case integers of
+        r :: g :: b :: tail ->
+            rgb r g b
 
-                Just n ->
-                    n
-
-        integerArray =
-            Array.fromList integers
-
-        r =
-            getValueWithDefault 0 integerArray
-
-        g =
-            getValueWithDefault 1 integerArray
-
-        b =
-            getValueWithDefault 2 integerArray
-    in
-        rgb r g b
+        _ ->
+            rgb 0 0 0

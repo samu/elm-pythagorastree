@@ -65,11 +65,11 @@ updatePoints : Int -> Point -> Model -> Model
 updatePoints n point model =
     let
         f =
-            \n' point' ->
-                if n == n' then
+            \n_ point_ ->
+                if n == n_ then
                     point
                 else
-                    point'
+                    point_
     in
         { model | points = List.indexedMap f model.points }
 
@@ -98,14 +98,14 @@ updateEdgeIndices n op model =
 insertPoint : Int -> Point -> Model -> Model
 insertPoint n point model =
     let
-        n =
+        n_ =
             n + 1
 
         points =
-            List.take n model.points ++ [ point ] ++ List.drop n model.points
+            List.take n_ model.points ++ [ point ] ++ List.drop n_ model.points
 
         ( e1, e2, e3 ) =
-            updateEdgeIndices n (+) model
+            updateEdgeIndices n_ (+) model
     in
         { model | points = points, e1 = e1, e2 = e2, e3 = e3 }
 
@@ -240,8 +240,8 @@ type alias Config =
     }
 
 
-buildTree' : Config -> List Form
-buildTree' { n, polygon, color, transformationMatrices, previousMatrix } =
+buildTree_ : Config -> List Form
+buildTree_ { n, polygon, color, transformationMatrices, previousMatrix } =
     let
         newColor =
             lighten 0.05 color
@@ -279,9 +279,9 @@ buildTree' { n, polygon, color, transformationMatrices, previousMatrix } =
             in
                 []
                     ++ [ formRight ]
-                    ++ buildTree' rightConfig
+                    ++ buildTree_ rightConfig
                     ++ [ formLeft ]
-                    ++ buildTree' leftConfig
+                    ++ buildTree_ leftConfig
         else
             [ formLeft, formRight ]
 
@@ -300,4 +300,4 @@ buildTree n model startColor =
             , previousMatrix = Transform.identity
             }
     in
-        [ form ] ++ buildTree' config
+        [ form ] ++ buildTree_ config

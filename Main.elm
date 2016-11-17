@@ -1,7 +1,6 @@
 module Main exposing (..)
 
 import Html exposing (Html, Attribute, text, div, input)
-import Html.App exposing (program)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Collage
@@ -33,7 +32,7 @@ import Helpers exposing (screenPointToCollage, drawPoint, colorFromList)
 
 
 main =
-    program { init = init, view = view, update = update, subscriptions = subscriptions }
+    Html.program { init = init, view = view, update = update, subscriptions = subscriptions }
 
 
 type DraggableType
@@ -102,13 +101,10 @@ subscriptions model =
 initialSizeCmd : Cmd Msg
 initialSizeCmd =
     let
-        failure =
-            \_ -> Resize 500 500
-
         success =
             \size -> Resize size.width size.height
     in
-        Task.perform failure success Window.size
+        Task.perform success Window.size
 
 
 type Msg
@@ -211,7 +207,7 @@ update msg model =
                 hasDragged =
                     model.mouseIsDown
 
-                model' =
+                model_ =
                     if model.mouseIsDown then
                         case model.currentDraggable of
                             Nothing ->
@@ -234,7 +230,7 @@ update msg model =
                     else
                         model
             in
-                ( { model'
+                ( { model_
                     | mouseX = mouseX
                     , mouseY = mouseY
                     , hasDragged = hasDragged
@@ -246,7 +242,7 @@ update msg model =
 
         MouseDown x y ->
             let
-                model =
+                model_ =
                     case model.currentDraggable of
                         Nothing ->
                             let
@@ -274,7 +270,7 @@ update msg model =
                         _ ->
                             model
             in
-                ( { model | mouseIsDown = True }, Cmd.none )
+                ( { model_ | mouseIsDown = True }, Cmd.none )
 
         MouseUp x y ->
             let

@@ -1,2 +1,4 @@
-## Pythagoras Tree Written In Elm
-[voila](https://samu.github.io/elm-pythagorastree/)
+## Pythagoras Tree
+[LINK](https://samu.github.io/elm-pythagorastree/)
+
+![image](/image.png?raw=true)
